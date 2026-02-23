@@ -1,43 +1,48 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+
+import { Button } from '@/src/ui/components/Button';
+import { Screen } from '@/src/ui/components/Screen';
+import { Text } from '@/src/ui/components/Text';
+import { theme } from '@/src/ui/theme';
 
 export default function ResultScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ outcome?: string }>();
+  const params = useLocalSearchParams<{ outcome?: string; reason?: string }>();
+
+  const completed = params.outcome === 'completed';
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>{params.outcome === 'completed' ? 'Completed' : 'Failed'}</Text>
-      <TouchableOpacity style={styles.button} onPress={() => router.replace('/')}>
-        <Text style={styles.buttonText}>Continue</Text>
-      </TouchableOpacity>
-    </View>
+    <Screen style={styles.container}>
+      <View style={styles.centered}>
+        <Text style={styles.center} variant="title">
+          {completed ? 'Completed' : 'Failed'}
+        </Text>
+        {!completed && params.reason ? (
+          <Text style={[styles.center, styles.reason]} variant="label">
+            Reason: {params.reason}
+          </Text>
+        ) : null}
+      </View>
+      <Button onPress={() => router.replace('/')}>Continue</Button>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    justifyContent: 'space-between',
+  },
+  centered: {
     alignItems: 'center',
-    backgroundColor: '#0b0f14',
     flex: 1,
     justifyContent: 'center',
-    padding: 24,
   },
-  text: {
-    color: '#f4f7fb',
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 24,
+  center: {
+    textAlign: 'center',
   },
-  button: {
-    backgroundColor: '#e7edf5',
-    borderRadius: 10,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-  },
-  buttonText: {
-    color: '#0f1720',
-    fontSize: 16,
-    fontWeight: '600',
+  reason: {
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.sm,
   },
 });

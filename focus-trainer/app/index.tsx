@@ -1,42 +1,44 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+
+import { getStories } from '@/src/content/storyPack';
+import { sessionService } from '@/src/services/SessionService';
+import { Button } from '@/src/ui/components/Button';
+import { Screen } from '@/src/ui/components/Screen';
+import { Text } from '@/src/ui/components/Text';
+import { theme } from '@/src/ui/theme';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const story = getStories()[0];
+
+  const handleStart = () => {
+    sessionService.startSession(story.id);
+    router.push({ pathname: '/session', params: { storyId: story.id } });
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Focus Story Trainer</Text>
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/session')}>
-        <Text style={styles.buttonText}>Start</Text>
-      </TouchableOpacity>
-    </View>
+    <Screen style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.center} variant="title">
+          Focus Story Trainer
+        </Text>
+        <Text style={styles.center}>One story. No pause. Stay in the app until the end.</Text>
+      </View>
+      <Button onPress={handleStart}>Start</Button>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    backgroundColor: '#0b0f14',
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
+    justifyContent: 'space-between',
   },
-  title: {
-    color: '#f4f7fb',
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 24,
+  content: {
+    gap: theme.spacing.lg,
+    marginTop: theme.spacing.xl,
   },
-  button: {
-    backgroundColor: '#e7edf5',
-    borderRadius: 10,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-  },
-  buttonText: {
-    color: '#0f1720',
-    fontSize: 16,
-    fontWeight: '600',
+  center: {
+    textAlign: 'center',
   },
 });

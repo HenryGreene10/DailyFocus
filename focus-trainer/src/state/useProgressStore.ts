@@ -1,6 +1,6 @@
 import {
   createContext,
-  PropsWithChildren,
+  createElement,
   useCallback,
   useContext,
   useEffect,
@@ -8,19 +8,11 @@ import {
   useState,
 } from 'react';
 
-import { Progress } from '@/src/domain/types';
-import { SessionResult } from '@/src/services/SessionService';
 import { EMPTY_PROGRESS, loadProgress, saveProgress } from '@/src/storage/progressStorage';
 
-interface ProgressStoreValue {
-  progress: Progress;
-  isHydrated: boolean;
-  recordSession: (result: SessionResult) => Promise<void>;
-}
+const ProgressStoreContext = createContext(undefined);
 
-const ProgressStoreContext = createContext<ProgressStoreValue | undefined>(undefined);
-
-function buildNextProgress(prev: Progress, result: SessionResult): Progress {
+function buildNextProgress(prev, result) {
   const completedStoryIds =
     result.outcome === 'completed' && !prev.completedStoryIds.includes(result.storyId)
       ? [...prev.completedStoryIds, result.storyId]
@@ -40,8 +32,8 @@ function buildNextProgress(prev: Progress, result: SessionResult): Progress {
   };
 }
 
-export function ProgressStoreProvider({ children }: PropsWithChildren) {
-  const [progress, setProgress] = useState<Progress>(EMPTY_PROGRESS);
+export function ProgressStoreProvider({ children }) {
+  const [progress, setProgress] = useState(EMPTY_PROGRESS);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -67,7 +59,7 @@ export function ProgressStoreProvider({ children }: PropsWithChildren) {
     };
   }, []);
 
-  const recordSession = useCallback(async (result: SessionResult) => {
+  const recordSession = useCallback(async (result) => {
     let nextProgress = EMPTY_PROGRESS;
 
     setProgress((prev) => {
@@ -87,10 +79,10 @@ export function ProgressStoreProvider({ children }: PropsWithChildren) {
     [isHydrated, progress, recordSession],
   );
 
-  return <ProgressStoreContext.Provider value={value}>{children}</ProgressStoreContext.Provider>;
+  return createElement(ProgressStoreContext.Provider, { value }, children);
 }
 
-export function useProgressStore(): ProgressStoreValue {
+export function useProgressStore() {
   const context = useContext(ProgressStoreContext);
 
   if (!context) {
