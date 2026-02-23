@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { storyData } from '@/constants/storyData';
@@ -134,6 +134,7 @@ export default function StoryScreen() {
   const fade = useRef(new Animated.Value(1)).current;
   const startedAtRef = useRef(Date.now());
   const isAnimatingRef = useRef(false);
+  const sessionEndedRef = useRef(false);
 
   useEffect(() => {
     setCanAdvance(false);
@@ -147,17 +148,35 @@ export default function StoryScreen() {
     };
   }, [passageIndex]);
 
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (sessionEndedRef.current) {
+        return;
+      }
+
+      if (nextState === 'inactive' || nextState === 'background') {
+        sessionEndedRef.current = true;
+        router.replace('/achievement?outcome=failed' as never);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [router]);
+
   const handleAdvance = async () => {
-    if (!canAdvance || isAnimatingRef.current) {
+    if (!canAdvance || isAnimatingRef.current || sessionEndedRef.current) {
       return;
     }
 
     const isLastPassage = passageIndex === storyData.passages.length - 1;
 
     if (isLastPassage) {
+      sessionEndedRef.current = true;
       const elapsedSeconds = Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000));
       await completeStory(elapsedSeconds);
-      router.replace('/achievement' as never);
+      router.replace('/achievement?outcome=completed' as never);
       return;
     }
 

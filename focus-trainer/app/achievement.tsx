@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -27,6 +27,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 export default function AchievementScreen() {
   const router = useRouter();
+  const { outcome } = useLocalSearchParams<{ outcome?: string }>();
   const pulse = useRef(new Animated.Value(0.3)).current;
   const [stats, setStats] = useState<FocusStats>({
     storiesCompleted: 0,
@@ -104,6 +105,7 @@ export default function AchievementScreen() {
   const minutesFocused = String(Math.round(stats.minutesFocused));
   const dayStreak = String(stats.dayStreak);
   const level = String(stats.level);
+  const failed = outcome === 'failed';
 
   return (
     <Pressable onPress={() => router.replace('/')} style={styles.container}>
@@ -113,8 +115,8 @@ export default function AchievementScreen() {
       <View style={[styles.corner, styles.cornerBottomRight]} />
 
       <View style={styles.content}>
-        <Text style={styles.label}>Story Complete</Text>
-        <Text style={styles.title}>Focus Deepens</Text>
+        <Text style={styles.label}>{failed ? 'Session Failed' : 'Story Complete'}</Text>
+        <Text style={styles.title}>{failed ? 'Focus Broke' : 'Focus Deepens'}</Text>
         <Text style={styles.subtitle}>
           {"You've reached Level "}
           {level}

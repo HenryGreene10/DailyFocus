@@ -7,6 +7,12 @@ import { theme } from '@/constants/theme';
 
 const ONBOARDED_KEY = 'dailyfocus_onboarded_v1';
 
+const steps = [
+  'Tap anywhere to advance',
+  'Each passage has a minimum display time',
+  'If you leave the app during a story, you fail',
+] as const;
+
 const CORNERS = [
   { key: 'tl', style: { top: theme.spacing.xl, left: theme.spacing.xl } },
   { key: 'tr', style: { top: theme.spacing.xl, right: theme.spacing.xl } },
@@ -14,35 +20,10 @@ const CORNERS = [
   { key: 'br', style: { bottom: theme.spacing.xl, right: theme.spacing.xl } },
 ] as const;
 
-export default function WelcomeScreen() {
+export default function OnboardingScreen() {
   const router = useRouter();
+  const [stepIndex, setStepIndex] = useState(0);
   const pulse = useRef(new Animated.Value(0.3)).current;
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function checkOnboarding() {
-      const onboarded = await AsyncStorage.getItem(ONBOARDED_KEY);
-
-      if (!isMounted) {
-        return;
-      }
-
-      if (onboarded !== 'true') {
-        router.replace('/onboarding' as never);
-        return;
-      }
-
-      setReady(true);
-    }
-
-    checkOnboarding();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [router]);
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -67,24 +48,32 @@ export default function WelcomeScreen() {
     };
   }, [pulse]);
 
-  if (!ready) {
-    return <View style={styles.container} />;
-  }
+  const handleNext = async () => {
+    const isLast = stepIndex === steps.length - 1;
+
+    if (!isLast) {
+      setStepIndex((prev) => prev + 1);
+      return;
+    }
+
+    await AsyncStorage.setItem(ONBOARDED_KEY, 'true');
+    router.replace('/' as never);
+  };
 
   return (
-    <Pressable onPress={() => router.push('/story' as never)} style={styles.container}>
+    <Pressable onPress={handleNext} style={styles.container}>
       {CORNERS.map((corner) => (
         <Text key={corner.key} style={[styles.cornerStar, corner.style]}>
           ✦
         </Text>
       ))}
 
-      <View style={styles.centerContent}>
+      <View style={styles.content}>
         <Text style={styles.title}>DailyFocus</Text>
-        <Text style={styles.subtitle}>your daily story awaits</Text>
+        <Text style={styles.message}>{steps[stepIndex]}</Text>
       </View>
 
-      <Animated.Text style={[styles.hint, { opacity: pulse }]}>tap anywhere to begin</Animated.Text>
+      <Animated.Text style={[styles.hint, { opacity: pulse }]}>tap anywhere to continue</Animated.Text>
     </Pressable>
   );
 }
@@ -96,8 +85,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  centerContent: {
+  content: {
     alignItems: 'center',
+    paddingHorizontal: 44,
   },
   title: {
     color: theme.colors.textPrimary,
@@ -106,20 +96,20 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     letterSpacing: 2,
   },
-  subtitle: {
-    color: theme.colors.textFaint,
-    fontFamily: theme.fonts.loraRegular,
-    fontSize: theme.fontSizes.body,
-    letterSpacing: 3,
-    marginTop: theme.spacing.xs,
-    textTransform: 'uppercase',
+  message: {
+    color: theme.colors.textSecondary,
+    fontFamily: theme.fonts.loraItalic,
+    fontSize: theme.fontSizes.bodyLarge,
+    lineHeight: 28,
+    marginTop: theme.spacing.md,
+    textAlign: 'center',
   },
   hint: {
     bottom: theme.spacing.lg,
     color: theme.colors.textFaint,
     fontFamily: theme.fonts.loraRegular,
     fontSize: theme.fontSizes.body,
-    letterSpacing: 3,
+    letterSpacing: 2,
     position: 'absolute',
     textTransform: 'uppercase',
   },
