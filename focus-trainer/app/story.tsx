@@ -1,7 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Animated,
+  AppState,
+  Pressable,
+  StyleSheet,
+  Text,
+  type GestureResponderEvent,
+  View,
+} from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { storyData } from '@/constants/storyData';
@@ -131,7 +139,9 @@ export default function StoryScreen() {
   const router = useRouter();
   const [passageIndex, setPassageIndex] = useState(0);
   const [canAdvance, setCanAdvance] = useState(false);
+  const [blockedHint, setBlockedHint] = useState<{ x: number; y: number } | null>(null);
   const fade = useRef(new Animated.Value(1)).current;
+  const blockedHintOpacity = useRef(new Animated.Value(0)).current;
   const startedAtRef = useRef(Date.now());
   const isAnimatingRef = useRef(false);
   const sessionEndedRef = useRef(false);
@@ -165,8 +175,38 @@ export default function StoryScreen() {
     };
   }, [router]);
 
-  const handleAdvance = async () => {
-    if (!canAdvance || isAnimatingRef.current || sessionEndedRef.current) {
+  const showBlockedHint = (event: GestureResponderEvent) => {
+    setBlockedHint({
+      x: event.nativeEvent.locationX,
+      y: event.nativeEvent.locationY,
+    });
+
+    blockedHintOpacity.stopAnimation();
+    blockedHintOpacity.setValue(0);
+
+    Animated.sequence([
+      Animated.timing(blockedHintOpacity, {
+        toValue: 0.35,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(blockedHintOpacity, {
+        toValue: 0,
+        duration: 900,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setBlockedHint(null);
+    });
+  };
+
+  const handleAdvance = async (event: GestureResponderEvent) => {
+    if (sessionEndedRef.current || isAnimatingRef.current) {
+      return;
+    }
+
+    if (!canAdvance) {
+      showBlockedHint(event);
       return;
     }
 
@@ -211,6 +251,20 @@ export default function StoryScreen() {
         </View>
         <Animated.Text style={[styles.passage, { opacity: fade }]}>{storyData.passages[passageIndex]}</Animated.Text>
       </View>
+      {blockedHint ? (
+        <Animated.Text
+          pointerEvents="none"
+          style={[
+            styles.blockedHint,
+            {
+              left: blockedHint.x - 40,
+              opacity: blockedHintOpacity,
+              top: blockedHint.y - 10,
+            },
+          ]}>
+          don’t rush
+        </Animated.Text>
+      ) : null}
     </Pressable>
   );
 }
@@ -255,5 +309,12 @@ const styles = StyleSheet.create({
     lineHeight: 32,
     paddingHorizontal: 44,
     textAlign: 'center',
+  },
+  blockedHint: {
+    color: theme.colors.textFaint,
+    fontFamily: theme.fonts.loraItalic,
+    fontSize: theme.fontSizes.body,
+    opacity: 0,
+    position: 'absolute',
   },
 });
