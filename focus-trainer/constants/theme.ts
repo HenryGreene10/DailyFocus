@@ -1,53 +1,61 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+export const theme = {
+  colors: {
+    background: '#F5F0E8',
+    textPrimary: '#1C1917',
+    textSecondary: '#44403C',
+    textFaint: '#A8A29E',
+    accent: '#8B6F47',
+    accentLight: '#C4A882',
+  },
+  spacing: {
+    xs: 8,
+    sm: 16,
+    md: 24,
+    lg: 32,
+    xl: 40,
+    xxl: 48,
+  },
+  fontSizes: {
+    tiny: 9,
+    small: 10,
+    body: 11,
+    bodyLarge: 13,
+    story: 17,
+    title: 36,
+    hero: 42,
+    stat: 40,
+  },
+  fonts: {
+    loraRegular: 'Lora_400Regular',
+    loraItalic: 'Lora_400Regular_Italic',
+    cormorantLight: 'CormorantGaramond_300Light',
+    cormorantItalic: 'CormorantGaramond_400Regular_Italic',
+  },
+} as const;
 
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
+// Compatibility exports for existing template utilities still present in repo.
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: theme.colors.textPrimary,
+    background: theme.colors.background,
+    tint: theme.colors.accent,
+    icon: theme.colors.textSecondary,
+    tabIconDefault: theme.colors.textFaint,
+    tabIconSelected: theme.colors.accent,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: theme.colors.textPrimary,
+    background: theme.colors.background,
+    tint: theme.colors.accent,
+    icon: theme.colors.textSecondary,
+    tabIconDefault: theme.colors.textFaint,
+    tabIconSelected: theme.colors.accent,
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+export const Fonts = {
+  sans: theme.fonts.loraRegular,
+  serif: theme.fonts.cormorantLight,
+  rounded: theme.fonts.cormorantLight,
+  mono: theme.fonts.loraRegular,
+};
