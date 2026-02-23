@@ -1,0 +1,21 @@
+{
+  "id": "demo_story",
+  "title": "The First Lock-In",
+  "pages": [
+    {
+      "id": "p1",
+      "text": "The timer starts, and your world shrinks to this page. You breathe once and keep reading.",
+      "minDisplayMs": 4000
+    },
+    {
+      "id": "p2",
+      "text": "A notification tries to pull you away, but the story asks for one clean decision: stay.",
+      "minDisplayMs": 4000
+    },
+    {
+      "id": "p3",
+      "text": "You reach the final line without leaving. That is the whole win: complete the story, no breaks.",
+      "minDisplayMs": 4000
+    }
+  ]
+}
