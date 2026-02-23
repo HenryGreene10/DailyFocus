@@ -156,17 +156,8 @@ export default function StoryScreen() {
 
     if (isLastPassage) {
       const elapsedSeconds = Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000));
-      const updated = await completeStory(elapsedSeconds);
-
-      router.replace({
-        pathname: '/achievement',
-        params: {
-          storiesCompleted: String(updated.storiesCompleted),
-          minutesFocused: String(updated.minutesFocused),
-          dayStreak: String(updated.dayStreak),
-          level: String(updated.level),
-        },
-      } as never);
+      await completeStory(elapsedSeconds);
+      router.replace('/achievement' as never);
       return;
     }
 

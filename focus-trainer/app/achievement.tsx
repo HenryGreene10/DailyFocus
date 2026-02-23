@@ -1,14 +1,19 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useMemo, useRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { theme } from '@/constants/theme';
 
-type AchievementParams = {
-  storiesCompleted?: string;
-  minutesFocused?: string;
-  dayStreak?: string;
-  level?: string;
+const STORY_STATS_KEY = 'dailyfocus_stats_v1';
+
+type FocusStats = {
+  storiesCompleted: number;
+  minutesFocused: number;
+  xp: number;
+  level: number;
+  lastCompletedDate: string;
+  dayStreak: number;
 };
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -22,20 +27,15 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 export default function AchievementScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<AchievementParams>();
   const pulse = useRef(new Animated.Value(0.3)).current;
-
-  const storiesCompleted = params.storiesCompleted ?? '0';
-  const dayStreak = params.dayStreak ?? '0';
-  const level = params.level ?? '1';
-
-  const minutesFocused = useMemo(() => {
-    const parsed = Number(params.minutesFocused ?? 0);
-    if (!Number.isFinite(parsed)) {
-      return '0';
-    }
-    return String(Math.round(parsed));
-  }, [params.minutesFocused]);
+  const [stats, setStats] = useState<FocusStats>({
+    storiesCompleted: 0,
+    minutesFocused: 0,
+    xp: 0,
+    level: 1,
+    lastCompletedDate: '',
+    dayStreak: 0,
+  });
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -59,6 +59,51 @@ export default function AchievementScreen() {
       animation.stop();
     };
   }, [pulse]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function hydrateStats() {
+      const raw = await AsyncStorage.getItem(STORY_STATS_KEY);
+      if (!raw || !isMounted) {
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw) as Partial<FocusStats>;
+        setStats({
+          storiesCompleted:
+            typeof parsed.storiesCompleted === 'number' && Number.isFinite(parsed.storiesCompleted)
+              ? parsed.storiesCompleted
+              : 0,
+          minutesFocused:
+            typeof parsed.minutesFocused === 'number' && Number.isFinite(parsed.minutesFocused)
+              ? parsed.minutesFocused
+              : 0,
+          xp: typeof parsed.xp === 'number' && Number.isFinite(parsed.xp) ? parsed.xp : 0,
+          level: typeof parsed.level === 'number' && Number.isFinite(parsed.level) ? parsed.level : 1,
+          lastCompletedDate: typeof parsed.lastCompletedDate === 'string' ? parsed.lastCompletedDate : '',
+          dayStreak:
+            typeof parsed.dayStreak === 'number' && Number.isFinite(parsed.dayStreak)
+              ? parsed.dayStreak
+              : 0,
+        });
+      } catch {
+        // Keep defaults on invalid storage payload.
+      }
+    }
+
+    hydrateStats();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const storiesCompleted = String(stats.storiesCompleted);
+  const minutesFocused = String(Math.round(stats.minutesFocused));
+  const dayStreak = String(stats.dayStreak);
+  const level = String(stats.level);
 
   return (
     <Pressable onPress={() => router.replace('/')} style={styles.container}>
