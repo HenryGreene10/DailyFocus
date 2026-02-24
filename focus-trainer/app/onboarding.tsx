@@ -26,6 +26,7 @@ export default function OnboardingScreen() {
   const [stepIndex, setStepIndex] = useState(0);
   const pulse = useRef(new Animated.Value(0.3)).current;
   const stepFade = useRef(new Animated.Value(1)).current;
+  const screenFade = useRef(new Animated.Value(1)).current;
   const isTransitioningRef = useRef(false);
 
   useEffect(() => {
@@ -77,12 +78,20 @@ export default function OnboardingScreen() {
       return;
     }
 
-    await AsyncStorage.setItem(ONBOARDED_KEY, 'true');
-    router.replace('/' as never);
+    isTransitioningRef.current = true;
+    Animated.timing(screenFade, {
+      toValue: 0,
+      duration: Platform.OS === 'ios' ? 360 : 280,
+      useNativeDriver: true,
+    }).start(async () => {
+      await AsyncStorage.setItem(ONBOARDED_KEY, 'true');
+      router.replace('/' as never);
+    });
   };
 
   return (
-    <Pressable onPress={handleNext} style={styles.container}>
+    <Animated.View style={{ flex: 1, opacity: screenFade }}>
+      <Pressable onPress={handleNext} style={styles.container}>
       {CORNERS.map((corner) => (
         <Text key={corner.key} style={[styles.cornerStar, corner.style]}>
           ✦
@@ -101,7 +110,8 @@ export default function OnboardingScreen() {
       </View>
 
       <Animated.Text style={[styles.hint, { opacity: pulse }]}>tap anywhere to continue</Animated.Text>
-    </Pressable>
+      </Pressable>
+    </Animated.View>
   );
 }
 

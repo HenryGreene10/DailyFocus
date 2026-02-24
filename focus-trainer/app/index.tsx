@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { theme } from '@/constants/theme';
 
@@ -16,18 +16,13 @@ const CORNERS = [
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const pulse = useRef(new Animated.Value(0.3)).current;
+  const suppressNextStartRef = useRef(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
 
     async function checkOnboarding() {
-      if (__DEV__) {
-        router.replace('/onboarding' as never);
-        return;
-      }
-
       const onboarded = await AsyncStorage.getItem(ONBOARDED_KEY);
 
       if (!isMounted) {
@@ -49,35 +44,31 @@ export default function WelcomeScreen() {
     };
   }, [router]);
 
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, {
-          toValue: 0.8,
-          duration: 1250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulse, {
-          toValue: 0.3,
-          duration: 1250,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-
-    animation.start();
-
-    return () => {
-      animation.stop();
-    };
-  }, [pulse]);
-
   if (!ready) {
     return <View style={styles.container} />;
   }
 
+  const handleStart = () => {
+    if (suppressNextStartRef.current) {
+      suppressNextStartRef.current = false;
+      return;
+    }
+
+    router.push('/story' as never);
+  };
+
+  const handleDevReset = async () => {
+    if (!__DEV__) {
+      return;
+    }
+
+    suppressNextStartRef.current = true;
+    await AsyncStorage.setItem(ONBOARDED_KEY, 'false');
+    router.replace('/onboarding' as never);
+  };
+
   return (
-    <Pressable onPress={() => router.push('/story' as never)} style={styles.container}>
+    <Pressable onPress={handleStart} style={styles.container}>
       {CORNERS.map((corner) => (
         <Text key={corner.key} style={[styles.cornerStar, corner.style]}>
           ✦
@@ -85,11 +76,11 @@ export default function WelcomeScreen() {
       ))}
 
       <View style={styles.centerContent}>
-        <Text style={styles.title}>DailyFocus</Text>
-        <Text style={styles.subtitle}>your daily story awaits</Text>
+        <Pressable delayLongPress={2000} onLongPress={__DEV__ ? handleDevReset : undefined}>
+          <Text style={styles.title}>DailyFocus</Text>
+        </Pressable>
+        <Text style={styles.subtitle}>tap to begin your practice</Text>
       </View>
-
-      <Animated.Text style={[styles.hint, { opacity: pulse }]}>tap anywhere to begin</Animated.Text>
     </Pressable>
   );
 }
@@ -117,16 +108,6 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSizes.body,
     letterSpacing: 3,
     marginTop: theme.spacing.xs,
-    textTransform: 'uppercase',
-  },
-  hint: {
-    bottom: theme.spacing.lg,
-    color: theme.colors.textFaint,
-    fontFamily: theme.fonts.loraRegular,
-    fontSize: theme.fontSizes.body,
-    letterSpacing: 3,
-    position: 'absolute',
-    textTransform: 'uppercase',
   },
   cornerStar: {
     color: theme.colors.accentLight,
