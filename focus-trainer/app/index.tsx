@@ -23,6 +23,11 @@ export default function WelcomeScreen() {
     let isMounted = true;
 
     async function checkOnboarding() {
+      if (__DEV__) {
+        router.replace('/onboarding' as never);
+        return;
+      }
+
       const onboarded = await AsyncStorage.getItem(ONBOARDED_KEY);
 
       if (!isMounted) {
