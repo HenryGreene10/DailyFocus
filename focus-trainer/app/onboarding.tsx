@@ -24,6 +24,8 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
   const pulse = useRef(new Animated.Value(0.3)).current;
+  const stepFade = useRef(new Animated.Value(1)).current;
+  const isTransitioningRef = useRef(false);
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -49,10 +51,28 @@ export default function OnboardingScreen() {
   }, [pulse]);
 
   const handleNext = async () => {
+    if (isTransitioningRef.current) {
+      return;
+    }
+
     const isLast = stepIndex === steps.length - 1;
 
     if (!isLast) {
-      setStepIndex((prev) => prev + 1);
+      isTransitioningRef.current = true;
+      Animated.timing(stepFade, {
+        toValue: 0,
+        duration: 220,
+        useNativeDriver: true,
+      }).start(() => {
+        setStepIndex((prev) => prev + 1);
+        Animated.timing(stepFade, {
+          toValue: 1,
+          duration: 220,
+          useNativeDriver: true,
+        }).start(() => {
+          isTransitioningRef.current = false;
+        });
+      });
       return;
     }
 
@@ -70,7 +90,9 @@ export default function OnboardingScreen() {
 
       <View style={styles.content}>
         <Text style={styles.title}>DailyFocus</Text>
-        <Text style={styles.message}>{steps[stepIndex]}</Text>
+        <Animated.Text style={[styles.message, { opacity: stepFade }]}>
+          {steps[stepIndex]}
+        </Animated.Text>
       </View>
 
       <Animated.Text style={[styles.hint, { opacity: pulse }]}>tap anywhere to continue</Animated.Text>

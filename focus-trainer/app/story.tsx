@@ -189,12 +189,12 @@ export default function StoryScreen() {
     Animated.sequence([
       Animated.timing(blockedHintOpacity, {
         toValue: 0.35,
-        duration: 120,
+        duration: 180,
         useNativeDriver: true,
       }),
       Animated.timing(blockedHintOpacity, {
         toValue: 0,
-        duration: 900,
+        duration: 1800,
         useNativeDriver: true,
       }),
     ]).start(() => {
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   blockedHint: {
     color: theme.colors.textFaint,
     fontFamily: theme.fonts.loraItalic,
-    fontSize: theme.fontSizes.body,
+    fontSize: 14,
     opacity: 0,
     position: 'absolute',
   },
