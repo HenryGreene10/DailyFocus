@@ -1,11 +1,9 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { theme } from '@/constants/theme';
 
-const ONBOARDED_KEY = 'dailyfocus_onboarded_v1';
 const STEP_FADE_MS = Platform.OS === 'ios' ? 320 : 240;
 
 const steps = [
@@ -83,8 +81,7 @@ export default function OnboardingScreen() {
       toValue: 0,
       duration: Platform.OS === 'ios' ? 360 : 280,
       useNativeDriver: true,
-    }).start(async () => {
-      await AsyncStorage.setItem(ONBOARDED_KEY, 'true');
+    }).start(() => {
       router.replace('/' as never);
     });
   };
@@ -92,24 +89,24 @@ export default function OnboardingScreen() {
   return (
     <Animated.View style={{ flex: 1, opacity: screenFade }}>
       <Pressable onPress={handleNext} style={styles.container}>
-      {CORNERS.map((corner) => (
-        <Text key={corner.key} style={[styles.cornerStar, corner.style]}>
-          ✦
-        </Text>
-      ))}
+        {CORNERS.map((corner) => (
+          <Text key={corner.key} style={[styles.cornerStar, corner.style]}>
+            ✦
+          </Text>
+        ))}
 
-      <View style={styles.content}>
-        <View style={styles.titleArea}>
-          <Text style={styles.title}>DailyFocus</Text>
+        <View style={styles.content}>
+          <View style={styles.titleArea}>
+            <Text style={styles.title}>DailyFocus</Text>
+          </View>
+          <View style={styles.instructionArea}>
+            <Animated.Text style={[styles.message, { opacity: stepFade }]}>
+              {steps[stepIndex]}
+            </Animated.Text>
+          </View>
         </View>
-        <View style={styles.instructionArea}>
-          <Animated.Text style={[styles.message, { opacity: stepFade }]}>
-            {steps[stepIndex]}
-          </Animated.Text>
-        </View>
-      </View>
 
-      <Animated.Text style={[styles.hint, { opacity: pulse }]}>tap anywhere to continue</Animated.Text>
+        <Animated.Text style={[styles.hint, { opacity: pulse }]}>tap anywhere to continue</Animated.Text>
       </Pressable>
     </Animated.View>
   );
