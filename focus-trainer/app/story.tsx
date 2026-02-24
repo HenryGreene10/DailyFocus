@@ -16,6 +16,7 @@ import { storyData } from '@/constants/storyData';
 import { theme } from '@/constants/theme';
 
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
+const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
 const PASSAGE_MIN_MS = 2000;
 
 type FocusStats = {
@@ -131,6 +132,7 @@ async function completeStory(elapsedSeconds: number): Promise<FocusStats> {
   };
 
   await AsyncStorage.setItem(STORY_STATS_KEY, JSON.stringify(updated));
+  await AsyncStorage.setItem(LAST_COMPLETED_KEY, updated.lastCompletedDate);
 
   return updated;
 }
