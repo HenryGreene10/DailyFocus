@@ -122,7 +122,8 @@ async function syncTonightReminder(): Promise<void> {
   const identifier = await Notifications.scheduleNotificationAsync({
     content: {
       title: 'DailyFocus',
-      body: `Don't forget practice your focus today, "Concentration is the secret of strength." — Ralph Waldo Emerson.`,
+      body: `Don’t forget to practice your focus today.
+“Concentration is the secret of strength.” — Ralph Waldo Emerson`,
       data: { type: REMINDER_NOTIFICATION_TYPE },
       sound: false,
     },

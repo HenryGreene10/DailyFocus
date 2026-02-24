@@ -7,9 +7,9 @@ import { theme } from '@/constants/theme';
 const STEP_FADE_MS = Platform.OS === 'ios' ? 320 : 240;
 
 const steps = [
-  'Tap to begin focusing.',
-  'Each passage has a minimum display time before you can continue.',
-  'If you leave the app during a story, you fail.\nThese instructions will not appear again.',
+  'Your daily focus practice.',
+  'Turn on Do Not Disturb.\nRead a short story. That’s all.',
+  'If you leave, the session ends.',
 ] as const;
 
 const CORNERS = [
@@ -106,7 +106,7 @@ export default function OnboardingScreen() {
           </View>
         </View>
 
-        <Animated.Text style={[styles.hint, { opacity: pulse }]}>tap anywhere to continue</Animated.Text>
+        <Animated.Text style={[styles.hint, { opacity: pulse }]}>{''}</Animated.Text>
       </Pressable>
     </Animated.View>
   );

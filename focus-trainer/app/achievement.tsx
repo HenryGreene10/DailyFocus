@@ -111,8 +111,8 @@ export default function AchievementScreen() {
       <View style={[styles.corner, styles.cornerBottomRight]} />
 
       <View style={styles.content}>
-        <Text style={styles.label}>{failed ? 'Session Failed' : 'Story Complete'}</Text>
-        <Text style={styles.title}>{failed ? 'Focus Broke' : 'Focus Deepens'}</Text>
+        <Text style={styles.label}>{failed ? 'Session Ended' : 'Story Complete'}</Text>
+        <Text style={styles.title}>{failed ? 'Stay with it tomorrow.' : 'Focus Deepens'}</Text>
         <Text style={styles.subtitle}>
           {"You've reached Level "}
           {level}
