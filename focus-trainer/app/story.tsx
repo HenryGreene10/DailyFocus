@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   AppState,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -18,6 +19,7 @@ import { theme } from '@/constants/theme';
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
 const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
 const PASSAGE_MIN_MS = 2000;
+const PASSAGE_FADE_MS = Platform.OS === 'ios' ? 980 : 820;
 
 type FocusStats = {
   storiesCompleted: number;
@@ -188,13 +190,13 @@ export default function StoryScreen() {
 
     Animated.sequence([
       Animated.timing(blockedHintOpacity, {
-        toValue: 0.35,
+        toValue: 0.48,
         duration: 180,
         useNativeDriver: true,
       }),
       Animated.timing(blockedHintOpacity, {
         toValue: 0,
-        duration: 1800,
+        duration: 2820,
         useNativeDriver: true,
       }),
     ]).start(() => {
@@ -226,13 +228,13 @@ export default function StoryScreen() {
 
     Animated.timing(fade, {
       toValue: 0,
-      duration: 800,
+      duration: PASSAGE_FADE_MS,
       useNativeDriver: true,
     }).start(() => {
       setPassageIndex((prev) => prev + 1);
       Animated.timing(fade, {
         toValue: 1,
-        duration: 800,
+        duration: PASSAGE_FADE_MS,
         useNativeDriver: true,
       }).start(() => {
         isAnimatingRef.current = false;
@@ -307,15 +309,15 @@ const styles = StyleSheet.create({
   passage: {
     color: theme.colors.textSecondary,
     fontFamily: theme.fonts.loraItalic,
-    fontSize: theme.fontSizes.story,
-    lineHeight: 32,
+    fontSize: Platform.OS === 'ios' ? theme.fontSizes.story + 1 : theme.fontSizes.story,
+    lineHeight: Platform.OS === 'ios' ? 34 : 32,
     paddingHorizontal: 44,
     textAlign: 'center',
   },
   blockedHint: {
     color: theme.colors.textFaint,
     fontFamily: theme.fonts.loraItalic,
-    fontSize: 14,
+    fontSize: Platform.OS === 'ios' ? 18 : 17,
     opacity: 0,
     position: 'absolute',
   },

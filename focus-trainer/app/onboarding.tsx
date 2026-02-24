@@ -1,16 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { theme } from '@/constants/theme';
 
 const ONBOARDED_KEY = 'dailyfocus_onboarded_v1';
+const STEP_FADE_MS = Platform.OS === 'ios' ? 320 : 240;
 
 const steps = [
-  'Tap anywhere to advance',
-  'Each passage has a minimum display time',
-  'If you leave the app during a story, you fail',
+  'Tap to begin focusing.',
+  'Each passage has a minimum display time before you can continue.',
+  'If you leave the app during a story, you fail.\nThese instructions will not appear again.',
 ] as const;
 
 const CORNERS = [
@@ -61,13 +62,13 @@ export default function OnboardingScreen() {
       isTransitioningRef.current = true;
       Animated.timing(stepFade, {
         toValue: 0,
-        duration: 220,
+        duration: STEP_FADE_MS,
         useNativeDriver: true,
       }).start(() => {
         setStepIndex((prev) => prev + 1);
         Animated.timing(stepFade, {
           toValue: 1,
-          duration: 220,
+          duration: STEP_FADE_MS,
           useNativeDriver: true,
         }).start(() => {
           isTransitioningRef.current = false;
@@ -89,10 +90,14 @@ export default function OnboardingScreen() {
       ))}
 
       <View style={styles.content}>
-        <Text style={styles.title}>DailyFocus</Text>
-        <Animated.Text style={[styles.message, { opacity: stepFade }]}>
-          {steps[stepIndex]}
-        </Animated.Text>
+        <View style={styles.titleArea}>
+          <Text style={styles.title}>DailyFocus</Text>
+        </View>
+        <View style={styles.instructionArea}>
+          <Animated.Text style={[styles.message, { opacity: stepFade }]}>
+            {steps[stepIndex]}
+          </Animated.Text>
+        </View>
       </View>
 
       <Animated.Text style={[styles.hint, { opacity: pulse }]}>tap anywhere to continue</Animated.Text>
@@ -111,6 +116,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 44,
   },
+  titleArea: {
+    alignItems: 'center',
+  },
+  instructionArea: {
+    alignItems: 'center',
+    borderTopColor: '#C4A88266',
+    borderTopWidth: 1,
+    marginTop: theme.spacing.lg,
+    paddingTop: theme.spacing.sm,
+  },
   title: {
     color: theme.colors.textPrimary,
     fontFamily: theme.fonts.cormorantLight,
@@ -121,9 +136,8 @@ const styles = StyleSheet.create({
   message: {
     color: theme.colors.textSecondary,
     fontFamily: theme.fonts.loraItalic,
-    fontSize: theme.fontSizes.bodyLarge,
-    lineHeight: 28,
-    marginTop: theme.spacing.md,
+    fontSize: Platform.OS === 'ios' ? theme.fontSizes.bodyLarge + 1 : theme.fontSizes.bodyLarge,
+    lineHeight: Platform.OS === 'ios' ? 30 : 28,
     textAlign: 'center',
   },
   hint: {
