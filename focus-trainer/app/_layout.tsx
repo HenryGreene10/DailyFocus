@@ -12,12 +12,32 @@ const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
 const TONIGHT_REMINDER_ID_KEY = 'dailyfocus_tonight_reminder_notification_id_v1';
 const REMINDER_NOTIFICATION_TYPE = 'daily_reminder';
 
-function isSameLocalDate(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+function getTodayDateKey(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function normalizeStoredDateKey(raw: string): string | null {
+  if (!raw) {
+    return null;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function getTonightReminderTriggerDate(): Date {
@@ -49,11 +69,7 @@ async function syncTonightReminder(): Promise<void> {
   }
 
   const lastCompletedRaw = await AsyncStorage.getItem(LAST_COMPLETED_KEY);
-  const lastCompleted = lastCompletedRaw ? new Date(lastCompletedRaw) : null;
-  const completedToday =
-    !!lastCompleted &&
-    !Number.isNaN(lastCompleted.getTime()) &&
-    isSameLocalDate(lastCompleted, new Date());
+  const completedToday = normalizeStoredDateKey(lastCompletedRaw ?? '') === getTodayDateKey();
 
   if (completedToday) {
     if (scheduledId) {
@@ -98,8 +114,7 @@ Notifications.setNotificationHandler({
     }
 
     const lastCompletedRaw = await AsyncStorage.getItem(LAST_COMPLETED_KEY);
-    const lastCompleted = lastCompletedRaw ? new Date(lastCompletedRaw) : null;
-    const completedToday = !!lastCompleted && !Number.isNaN(lastCompleted.getTime()) && isSameLocalDate(lastCompleted, new Date());
+    const completedToday = normalizeStoredDateKey(lastCompletedRaw ?? '') === getTodayDateKey();
 
     return {
       shouldShowBanner: !completedToday,

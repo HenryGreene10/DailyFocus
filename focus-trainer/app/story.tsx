@@ -20,6 +20,8 @@ import { theme } from '@/constants/theme';
 
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
 const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
+const LAST_OUTCOME_TODAY_KEY = 'dailyfocus_last_outcome_today_v1';
+const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
 const TONIGHT_REMINDER_ID_KEY = 'dailyfocus_tonight_reminder_notification_id_v1';
 const REMINDER_NOTIFICATION_TYPE = 'daily_reminder';
 const PASSAGE_MIN_MS = 2000;
@@ -48,30 +50,66 @@ function sanitizeNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }
 
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+function getTodayDateKey(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
-function getDayDifference(previousDateIso: string, now: Date): number | null {
-  if (!previousDateIso) {
+function parseDateKeyToDate(dateKey: string): Date | null {
+  const parts = dateKey.split('-');
+  if (parts.length !== 3) {
     return null;
   }
 
-  const previousDate = new Date(previousDateIso);
-  if (Number.isNaN(previousDate.getTime())) {
+  const year = Number(parts[0]);
+  const monthIndex = Number(parts[1]) - 1;
+  const day = Number(parts[2]);
+
+  if (!Number.isFinite(year) || !Number.isFinite(monthIndex) || !Number.isFinite(day)) {
     return null;
   }
 
-  const diffMs = startOfDay(now).getTime() - startOfDay(previousDate).getTime();
+  return new Date(year, monthIndex, day);
+}
+
+function normalizeStoredDateKey(raw: string): string | null {
+  if (!raw) {
+    return null;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getDayDifference(previousDateKeyRaw: string, nowDateKey: string): number | null {
+  const previousDateKey = normalizeStoredDateKey(previousDateKeyRaw);
+  if (!previousDateKey) {
+    return null;
+  }
+
+  const previousDate = parseDateKeyToDate(previousDateKey);
+  const nowDate = parseDateKeyToDate(nowDateKey);
+
+  if (!previousDate || !nowDate) {
+    return null;
+  }
+
+  const diffMs = nowDate.getTime() - previousDate.getTime();
   return Math.floor(diffMs / 86400000);
-}
-
-function isSameLocalDate(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
 }
 
 function getTonightReminderTriggerDate(): Date {
@@ -103,11 +141,7 @@ async function syncTonightReminder(): Promise<void> {
   }
 
   const lastCompletedRaw = await AsyncStorage.getItem(LAST_COMPLETED_KEY);
-  const lastCompleted = lastCompletedRaw ? new Date(lastCompletedRaw) : null;
-  const completedToday =
-    !!lastCompleted &&
-    !Number.isNaN(lastCompleted.getTime()) &&
-    isSameLocalDate(lastCompleted, new Date());
+  const completedToday = normalizeStoredDateKey(lastCompletedRaw ?? '') === getTodayDateKey();
 
   if (completedToday) {
     if (scheduledId) {
@@ -190,8 +224,8 @@ async function loadStats(): Promise<FocusStats> {
 
 async function completeStory(elapsedSeconds: number): Promise<FocusStats> {
   const previous = await loadStats();
-  const now = new Date();
-  const dayDiff = getDayDifference(previous.lastCompletedDate, now);
+  const todayDateKey = getTodayDateKey();
+  const dayDiff = getDayDifference(previous.lastCompletedDate, todayDateKey);
 
   const dayStreak =
     dayDiff === null ? 1 : dayDiff === 1 ? previous.dayStreak + 1 : dayDiff === 0 ? previous.dayStreak : 1;
@@ -206,12 +240,14 @@ async function completeStory(elapsedSeconds: number): Promise<FocusStats> {
     minutesFocused,
     xp,
     level,
-    lastCompletedDate: now.toISOString(),
+    lastCompletedDate: todayDateKey,
     dayStreak,
   };
 
   await AsyncStorage.setItem(STORY_STATS_KEY, JSON.stringify(updated));
   await AsyncStorage.setItem(LAST_COMPLETED_KEY, updated.lastCompletedDate);
+  await AsyncStorage.setItem(LAST_OUTCOME_TODAY_KEY, 'completed');
+  await AsyncStorage.setItem(LAST_OUTCOME_DATE_KEY, todayDateKey);
 
   return updated;
 }
@@ -247,13 +283,28 @@ export default function StoryScreen() {
 
       if (nextState === 'inactive' || nextState === 'background') {
         sessionEndedRef.current = true;
-        router.replace('/achievement?outcome=failed' as never);
+        const todayDateKey = getTodayDateKey();
+        void (async () => {
+          await AsyncStorage.setItem(LAST_OUTCOME_TODAY_KEY, 'failed');
+          await AsyncStorage.setItem(LAST_OUTCOME_DATE_KEY, todayDateKey);
+          router.replace('/achievement?outcome=failed' as never);
+        })();
       }
     });
 
     return () => {
       subscription.remove();
     };
+  }, [router]);
+
+  useEffect(() => {
+    void (async () => {
+      const completedRaw = await AsyncStorage.getItem(LAST_COMPLETED_KEY);
+      if (normalizeStoredDateKey(completedRaw ?? '') === getTodayDateKey()) {
+        sessionEndedRef.current = true;
+        router.replace('/achievement?outcome=completed' as never);
+      }
+    })();
   }, [router]);
 
   const showBlockedHint = (event: GestureResponderEvent) => {

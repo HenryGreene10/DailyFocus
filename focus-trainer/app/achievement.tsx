@@ -1,11 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { theme } from '@/constants/theme';
 
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
+const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
+const LAST_OUTCOME_TODAY_KEY = 'dailyfocus_last_outcome_today_v1';
+const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
 
 type FocusStats = {
   storiesCompleted: number;
@@ -15,6 +18,8 @@ type FocusStats = {
   lastCompletedDate: string;
   dayStreak: number;
 };
+
+type SessionOutcome = 'completed' | 'failed';
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -29,10 +34,38 @@ function sanitizeNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }
 
+function getTodayDateKey(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function normalizeStoredDateKey(raw: string): string | null {
+  if (!raw) {
+    return null;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export default function AchievementScreen() {
   const router = useRouter();
-  const { outcome } = useLocalSearchParams<{ outcome?: string }>();
-  const pulse = useRef(new Animated.Value(0.3)).current;
+  const { outcome } = useLocalSearchParams<{ outcome?: SessionOutcome }>();
+  const [resolvedOutcome, setResolvedOutcome] = useState<SessionOutcome>('completed');
   const [stats, setStats] = useState<FocusStats>({
     storiesCompleted: 0,
     minutesFocused: 0,
@@ -41,29 +74,6 @@ export default function AchievementScreen() {
     lastCompletedDate: '',
     dayStreak: 0,
   });
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, {
-          toValue: 0.8,
-          duration: 1250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulse, {
-          toValue: 0.3,
-          duration: 1250,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-
-    animation.start();
-
-    return () => {
-      animation.stop();
-    };
-  }, [pulse]);
 
   useEffect(() => {
     let isMounted = true;
@@ -90,21 +100,62 @@ export default function AchievementScreen() {
       }
     }
 
-    hydrateStats();
+    async function hydrateOutcome() {
+      if (!isMounted) {
+        return;
+      }
+
+      if (outcome === 'completed' || outcome === 'failed') {
+        setResolvedOutcome(outcome);
+        return;
+      }
+
+      const [storedOutcome, storedOutcomeDateRaw] = await Promise.all([
+        AsyncStorage.getItem(LAST_OUTCOME_TODAY_KEY),
+        AsyncStorage.getItem(LAST_OUTCOME_DATE_KEY),
+      ]);
+
+      const hasOutcomeToday =
+        normalizeStoredDateKey(storedOutcomeDateRaw ?? '') === getTodayDateKey() &&
+        (storedOutcome === 'completed' || storedOutcome === 'failed');
+
+      if (hasOutcomeToday) {
+        setResolvedOutcome(storedOutcome as SessionOutcome);
+      }
+    }
+
+    void hydrateStats();
+    void hydrateOutcome();
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [outcome]);
 
   const storiesCompleted = String(stats.storiesCompleted);
   const minutesFocused = String(Math.round(stats.minutesFocused));
   const dayStreak = String(stats.dayStreak);
   const level = String(stats.level);
-  const failed = outcome === 'failed';
+  const failed = resolvedOutcome === 'failed';
 
   return (
-    <Pressable onPress={() => router.replace('/')} style={styles.container}>
+    <Pressable
+      delayLongPress={2000}
+      onLongPress={
+        __DEV__
+          ? () => {
+              void (async () => {
+                await AsyncStorage.multiRemove([
+                  LAST_COMPLETED_KEY,
+                  LAST_OUTCOME_TODAY_KEY,
+                  LAST_OUTCOME_DATE_KEY,
+                ]);
+                router.replace('/' as never);
+              })();
+            }
+          : undefined
+      }
+      style={styles.container}>
       <View style={[styles.corner, styles.cornerTopLeft]} />
       <View style={[styles.corner, styles.cornerTopRight]} />
       <View style={[styles.corner, styles.cornerBottomLeft]} />
@@ -125,8 +176,6 @@ export default function AchievementScreen() {
           <View style={styles.divider} />
           <Stat label="Streak" value={dayStreak} />
         </View>
-
-        <Animated.Text style={[styles.hint, { opacity: pulse }]}>tap to return home</Animated.Text>
       </View>
     </Pressable>
   );
@@ -194,14 +243,6 @@ const styles = StyleSheet.create({
     marginHorizontal: theme.spacing.sm,
     opacity: 0.12,
     width: 1,
-  },
-  hint: {
-    color: theme.colors.textFaint,
-    fontFamily: theme.fonts.loraRegular,
-    fontSize: theme.fontSizes.body,
-    letterSpacing: 2,
-    marginTop: theme.spacing.xxl,
-    textTransform: 'uppercase',
   },
   corner: {
     borderColor: theme.colors.accent,
