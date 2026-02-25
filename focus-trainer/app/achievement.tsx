@@ -3,10 +3,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { stage1Stories } from '@/constants/stories';
 import { theme } from '@/constants/theme';
 
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
 const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
+const LAST_COMPLETED_STORY_ID_KEY = 'dailyfocus_last_completed_story_id_v1';
 const LAST_OUTCOME_TODAY_KEY = 'dailyfocus_last_outcome_today_v1';
 const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
 
@@ -66,6 +68,8 @@ export default function AchievementScreen() {
   const router = useRouter();
   const { outcome } = useLocalSearchParams<{ outcome?: SessionOutcome }>();
   const [resolvedOutcome, setResolvedOutcome] = useState<SessionOutcome>('completed');
+  const [storyCompleteTitle, setStoryCompleteTitle] = useState<string | null>(null);
+  const [storyCompleteNote, setStoryCompleteNote] = useState<string | null>(null);
   const [stats, setStats] = useState<FocusStats>({
     storiesCompleted: 0,
     minutesFocused: 0,
@@ -124,8 +128,24 @@ export default function AchievementScreen() {
       }
     }
 
+    async function hydrateStoryReflection() {
+      const lastCompletedStoryId = await AsyncStorage.getItem(LAST_COMPLETED_STORY_ID_KEY);
+      if (!lastCompletedStoryId || !isMounted) {
+        return;
+      }
+
+      const story = stage1Stories.find((entry) => entry.id === lastCompletedStoryId);
+      if (!story) {
+        return;
+      }
+
+      setStoryCompleteTitle(story.completeTitle ?? null);
+      setStoryCompleteNote(story.completeNote ?? null);
+    }
+
     void hydrateStats();
     void hydrateOutcome();
+    void hydrateStoryReflection();
 
     return () => {
       isMounted = false;
@@ -137,6 +157,7 @@ export default function AchievementScreen() {
   const dayStreak = String(stats.dayStreak);
   const level = String(stats.level);
   const failed = resolvedOutcome === 'failed';
+  const completionTitle = failed ? 'Stay with it tomorrow.' : storyCompleteTitle ?? 'Focus Deepens';
 
   return (
     <Pressable
@@ -163,7 +184,10 @@ export default function AchievementScreen() {
 
       <View style={styles.content}>
         <Text style={styles.label}>{failed ? 'Session Ended' : 'Daily Story Complete'}</Text>
-        <Text style={styles.title}>{failed ? 'Stay with it tomorrow.' : 'Focus Deepens'}</Text>
+        <Text style={styles.title}>{completionTitle}</Text>
+        {!failed && storyCompleteNote ? (
+          <Text style={styles.completeNote}>{storyCompleteNote}</Text>
+        ) : null}
         <Text style={styles.subtitle}>
           {"You've reached Level "}
           {level}
@@ -177,7 +201,6 @@ export default function AchievementScreen() {
           <Stat label="Streak" value={dayStreak} />
         </View>
 
-        <Text style={styles.tomorrowNote}>See you tomorrow.</Text>
       </View>
     </Pressable>
   );
@@ -246,12 +269,13 @@ const styles = StyleSheet.create({
     opacity: 0.12,
     width: 1,
   },
-  tomorrowNote: {
+  completeNote: {
     color: theme.colors.textFaint,
     fontFamily: theme.fonts.loraRegular,
     fontSize: theme.fontSizes.body,
-    marginTop: theme.spacing.lg,
+    marginTop: theme.spacing.sm,
     opacity: 0.7,
+    textAlign: 'center',
   },
   corner: {
     borderColor: theme.colors.accent,

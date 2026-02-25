@@ -20,6 +20,7 @@ import { theme } from '@/constants/theme';
 
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
 const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
+const LAST_COMPLETED_STORY_ID_KEY = 'dailyfocus_last_completed_story_id_v1';
 const LAST_OUTCOME_TODAY_KEY = 'dailyfocus_last_outcome_today_v1';
 const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
 const TONIGHT_REMINDER_ID_KEY = 'dailyfocus_tonight_reminder_notification_id_v1';
@@ -356,6 +357,7 @@ export default function StoryScreen() {
       sessionEndedRef.current = true;
       const elapsedSeconds = Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000));
       const updated = await completeStory(elapsedSeconds);
+      await AsyncStorage.setItem(LAST_COMPLETED_STORY_ID_KEY, story.id);
 
       if (updated.storiesCompleted === 1) {
         const permissions = await Notifications.getPermissionsAsync();
