@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -23,6 +24,7 @@ const TONIGHT_REMINDER_ID_KEY = 'dailyfocus_tonight_reminder_notification_id_v1'
 const REMINDER_NOTIFICATION_TYPE = 'daily_reminder';
 const PASSAGE_MIN_MS = 2000;
 const PASSAGE_FADE_MS = Platform.OS === 'ios' ? 980 : 820;
+const COMPLETION_PAUSE_MS = 450;
 
 type FocusStats = {
   storiesCompleted: number;
@@ -304,6 +306,10 @@ export default function StoryScreen() {
       }
 
       await syncTonightReminder();
+      await Haptics.selectionAsync();
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, COMPLETION_PAUSE_MS);
+      });
       router.replace('/achievement?outcome=completed' as never);
       return;
     }

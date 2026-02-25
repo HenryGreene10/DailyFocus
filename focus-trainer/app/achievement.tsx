@@ -173,10 +173,11 @@ const styles = StyleSheet.create({
     minWidth: 90,
   },
   statValue: {
-    color: theme.colors.textPrimary,
+    color: theme.colors.textSecondary,
     fontFamily: theme.fonts.cormorantLight,
-    fontSize: theme.fontSizes.stat,
+    fontSize: 34,
     fontWeight: '300',
+    opacity: 0.78,
   },
   statLabel: {
     color: theme.colors.textFaint,
@@ -184,13 +185,14 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSizes.tiny,
     letterSpacing: 2,
     marginTop: theme.spacing.xs,
+    opacity: 0.72,
     textTransform: 'uppercase',
   },
   divider: {
     backgroundColor: theme.colors.accent,
     height: 70,
     marginHorizontal: theme.spacing.sm,
-    opacity: 0.2,
+    opacity: 0.12,
     width: 1,
   },
   hint: {
