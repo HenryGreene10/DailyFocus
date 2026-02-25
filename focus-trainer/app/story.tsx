@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-import { storyData } from '@/constants/storyData';
+import { stage1Stories } from '@/constants/stories';
 import { theme } from '@/constants/theme';
 
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
@@ -24,7 +24,6 @@ const LAST_OUTCOME_TODAY_KEY = 'dailyfocus_last_outcome_today_v1';
 const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
 const TONIGHT_REMINDER_ID_KEY = 'dailyfocus_tonight_reminder_notification_id_v1';
 const REMINDER_NOTIFICATION_TYPE = 'daily_reminder';
-const PASSAGE_MIN_MS = 2000;
 const PASSAGE_FADE_MS = Platform.OS === 'ios' ? 980 : 820;
 const COMPLETION_PAUSE_MS = 450;
 
@@ -45,6 +44,8 @@ const defaultStats: FocusStats = {
   lastCompletedDate: '',
   dayStreak: 0,
 };
+
+type StoryEntry = (typeof stage1Stories)[number];
 
 function sanitizeNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -254,26 +255,16 @@ async function completeStory(elapsedSeconds: number): Promise<FocusStats> {
 
 export default function StoryScreen() {
   const router = useRouter();
+  const story: StoryEntry | undefined = stage1Stories[0];
   const [passageIndex, setPassageIndex] = useState(0);
-  const [canAdvance, setCanAdvance] = useState(false);
   const [blockedHint, setBlockedHint] = useState<{ x: number; y: number } | null>(null);
   const fade = useRef(new Animated.Value(1)).current;
   const blockedHintOpacity = useRef(new Animated.Value(0)).current;
+  const blockedHintRunIdRef = useRef(0);
+  const passageStartedAtRef = useRef(Date.now());
   const startedAtRef = useRef(Date.now());
   const isAnimatingRef = useRef(false);
   const sessionEndedRef = useRef(false);
-
-  useEffect(() => {
-    setCanAdvance(false);
-
-    const timeout = setTimeout(() => {
-      setCanAdvance(true);
-    }, PASSAGE_MIN_MS);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [passageIndex]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -299,13 +290,17 @@ export default function StoryScreen() {
 
   useEffect(() => {
     void (async () => {
+      if (!story) {
+        return;
+      }
+
       const completedRaw = await AsyncStorage.getItem(LAST_COMPLETED_KEY);
       if (normalizeStoredDateKey(completedRaw ?? '') === getTodayDateKey()) {
         sessionEndedRef.current = true;
         router.replace('/achievement?outcome=completed' as never);
       }
     })();
-  }, [router]);
+  }, [router, story]);
 
   const showBlockedHint = (event: GestureResponderEvent) => {
     setBlockedHint({
@@ -313,6 +308,8 @@ export default function StoryScreen() {
       y: event.nativeEvent.locationY,
     });
 
+    blockedHintRunIdRef.current += 1;
+    const runId = blockedHintRunIdRef.current;
     blockedHintOpacity.stopAnimation();
     blockedHintOpacity.setValue(0);
 
@@ -328,21 +325,32 @@ export default function StoryScreen() {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      setBlockedHint(null);
+      if (blockedHintRunIdRef.current === runId) {
+        setBlockedHint(null);
+      }
     });
   };
 
   const handleAdvance = async (event: GestureResponderEvent) => {
-    if (sessionEndedRef.current || isAnimatingRef.current) {
+    if (sessionEndedRef.current) {
       return;
     }
 
-    if (!canAdvance) {
+    if (!story) {
+      return;
+    }
+
+    const elapsedSincePassageShownMs = Date.now() - passageStartedAtRef.current;
+    if (elapsedSincePassageShownMs < story.minDisplayMs) {
       showBlockedHint(event);
       return;
     }
 
-    const isLastPassage = passageIndex === storyData.passages.length - 1;
+    if (isAnimatingRef.current) {
+      return;
+    }
+
+    const isLastPassage = passageIndex === story.passages.length - 1;
 
     if (isLastPassage) {
       sessionEndedRef.current = true;
@@ -378,23 +386,28 @@ export default function StoryScreen() {
         duration: PASSAGE_FADE_MS,
         useNativeDriver: true,
       }).start(() => {
+        passageStartedAtRef.current = Date.now();
         isAnimatingRef.current = false;
       });
     });
   };
 
+  if (!story) {
+    return <View style={styles.container} />;
+  }
+
   return (
     <Pressable onPress={handleAdvance} style={styles.container}>
       <View style={styles.metaBlock}>
-        <Text style={styles.chapter}>{storyData.chapter}</Text>
-        <Text style={styles.title}>{storyData.title}</Text>
+        <Text style={styles.title}>{story.title}</Text>
+        <Text style={styles.author}>— {story.author}</Text>
       </View>
 
       <View style={styles.centerBlock}>
         <View pointerEvents="none" style={styles.watermark}>
           <LighthouseWatermark />
         </View>
-        <Animated.Text style={[styles.passage, { opacity: fade }]}>{storyData.passages[passageIndex]}</Animated.Text>
+        <Animated.Text style={[styles.passage, { opacity: fade }]}>{story.passages[passageIndex]}</Animated.Text>
       </View>
       {blockedHint ? (
         <Animated.Text
@@ -424,23 +437,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 70,
   },
-  chapter: {
-    color: theme.colors.accent,
-    fontFamily: theme.fonts.loraRegular,
-    fontSize: theme.fontSizes.tiny,
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-  },
   title: {
     color: theme.colors.textFaint,
     fontFamily: theme.fonts.cormorantItalic,
     fontSize: 15,
+  },
+  author: {
+    color: theme.colors.textFaint,
+    fontFamily: theme.fonts.loraRegular,
+    fontSize: theme.fontSizes.tiny,
     marginTop: theme.spacing.xs,
+    opacity: 0.75,
   },
   centerBlock: {
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
+    paddingBottom: 36,
     width: '100%',
   },
   watermark: {

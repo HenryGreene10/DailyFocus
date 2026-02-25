@@ -162,7 +162,7 @@ export default function AchievementScreen() {
       <View style={[styles.corner, styles.cornerBottomRight]} />
 
       <View style={styles.content}>
-        <Text style={styles.label}>{failed ? 'Session Ended' : 'Story Complete'}</Text>
+        <Text style={styles.label}>{failed ? 'Session Ended' : 'Daily Story Complete'}</Text>
         <Text style={styles.title}>{failed ? 'Stay with it tomorrow.' : 'Focus Deepens'}</Text>
         <Text style={styles.subtitle}>
           {"You've reached Level "}
@@ -176,6 +176,8 @@ export default function AchievementScreen() {
           <View style={styles.divider} />
           <Stat label="Streak" value={dayStreak} />
         </View>
+
+        <Text style={styles.tomorrowNote}>See you tomorrow.</Text>
       </View>
     </Pressable>
   );
@@ -243,6 +245,13 @@ const styles = StyleSheet.create({
     marginHorizontal: theme.spacing.sm,
     opacity: 0.12,
     width: 1,
+  },
+  tomorrowNote: {
+    color: theme.colors.textFaint,
+    fontFamily: theme.fonts.loraRegular,
+    fontSize: theme.fontSizes.body,
+    marginTop: theme.spacing.lg,
+    opacity: 0.7,
   },
   corner: {
     borderColor: theme.colors.accent,
