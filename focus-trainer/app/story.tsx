@@ -21,6 +21,7 @@ import { theme } from '@/constants/theme';
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
 const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
 const LAST_COMPLETED_STORY_ID_KEY = 'dailyfocus_last_completed_story_id_v1';
+const CURRENT_STORY_INDEX_KEY = 'dailyfocus_current_story_index_v1';
 const LAST_OUTCOME_TODAY_KEY = 'dailyfocus_last_outcome_today_v1';
 const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
 const TONIGHT_REMINDER_ID_KEY = 'dailyfocus_tonight_reminder_notification_id_v1';
@@ -128,6 +129,46 @@ function getTonightReminderTriggerDate(): Date {
   }
 
   return tonight;
+}
+
+function balancePassageLines(text: string, targetLineLength = 30): string {
+  const normalized = text.replace(/\s+/g, ' ').trim();
+  if (!normalized) {
+    return '';
+  }
+
+  const words = normalized.split(' ');
+  const lines: string[] = [];
+  let currentLine = words[0];
+
+  for (let i = 1; i < words.length; i += 1) {
+    const nextWord = words[i];
+    const candidateLine = `${currentLine} ${nextWord}`;
+    if (candidateLine.length <= targetLineLength) {
+      currentLine = candidateLine;
+      continue;
+    }
+
+    lines.push(currentLine);
+    currentLine = nextWord;
+  }
+
+  lines.push(currentLine);
+
+  const lastIndex = lines.length - 1;
+  if (lastIndex > 0) {
+    const lastWords = lines[lastIndex].split(' ');
+    const previousWords = lines[lastIndex - 1].split(' ');
+    if (lastWords.length === 1 && previousWords.length > 1) {
+      const movedWord = previousWords.pop();
+      if (movedWord) {
+        lines[lastIndex - 1] = previousWords.join(' ');
+        lines[lastIndex] = `${movedWord} ${lines[lastIndex]}`;
+      }
+    }
+  }
+
+  return lines.join('\n');
 }
 
 async function syncTonightReminder(): Promise<void> {
@@ -256,7 +297,11 @@ async function completeStory(elapsedSeconds: number): Promise<FocusStats> {
 
 export default function StoryScreen() {
   const router = useRouter();
-  const story: StoryEntry | undefined = stage1Stories[0];
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+  const story: StoryEntry | undefined =
+    stage1Stories.length > 0
+      ? stage1Stories[Math.min(currentStoryIndex, stage1Stories.length - 1)]
+      : undefined;
   const [passageIndex, setPassageIndex] = useState(0);
   const [blockedHint, setBlockedHint] = useState<{ x: number; y: number } | null>(null);
   const fade = useRef(new Animated.Value(1)).current;
@@ -266,6 +311,29 @@ export default function StoryScreen() {
   const startedAtRef = useRef(Date.now());
   const isAnimatingRef = useRef(false);
   const sessionEndedRef = useRef(false);
+
+  useEffect(() => {
+    void (async () => {
+      const rawIndex = await AsyncStorage.getItem(CURRENT_STORY_INDEX_KEY);
+      if (!rawIndex) {
+        return;
+      }
+
+      const parsed = Number(rawIndex);
+      if (Number.isFinite(parsed) && parsed >= 0) {
+        setCurrentStoryIndex(parsed);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    setPassageIndex(0);
+    passageStartedAtRef.current = Date.now();
+    startedAtRef.current = Date.now();
+    isAnimatingRef.current = false;
+    sessionEndedRef.current = false;
+    fade.setValue(1);
+  }, [currentStoryIndex, fade]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -358,6 +426,9 @@ export default function StoryScreen() {
       const elapsedSeconds = Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000));
       const updated = await completeStory(elapsedSeconds);
       await AsyncStorage.setItem(LAST_COMPLETED_STORY_ID_KEY, story.id);
+      const nextStoryIndex = currentStoryIndex + 1;
+      await AsyncStorage.setItem(CURRENT_STORY_INDEX_KEY, String(nextStoryIndex));
+      setCurrentStoryIndex(nextStoryIndex);
 
       if (updated.storiesCompleted === 1) {
         const permissions = await Notifications.getPermissionsAsync();
@@ -398,18 +469,23 @@ export default function StoryScreen() {
     return <View style={styles.container} />;
   }
 
+  const balancedPassage = balancePassageLines(story.passages[passageIndex]);
+
   return (
     <Pressable onPress={handleAdvance} style={styles.container}>
       <View style={styles.metaBlock}>
-        <Text style={styles.title}>{story.title}</Text>
-        <Text style={styles.author}>— {story.author}</Text>
+        <Text style={styles.title}>
+          {story.title}
+          {' by '}
+          {story.author}
+        </Text>
       </View>
 
       <View style={styles.centerBlock}>
         <View pointerEvents="none" style={styles.watermark}>
           <LighthouseWatermark />
         </View>
-        <Animated.Text style={[styles.passage, { opacity: fade }]}>{story.passages[passageIndex]}</Animated.Text>
+        <Animated.Text style={[styles.passage, { opacity: fade }]}>{balancedPassage}</Animated.Text>
       </View>
       {blockedHint ? (
         <Animated.Text
@@ -443,13 +519,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textFaint,
     fontFamily: theme.fonts.cormorantItalic,
     fontSize: 15,
-  },
-  author: {
-    color: theme.colors.textFaint,
-    fontFamily: theme.fonts.loraRegular,
-    fontSize: theme.fontSizes.tiny,
-    marginTop: theme.spacing.xs,
-    opacity: 0.75,
   },
   centerBlock: {
     alignItems: 'center',

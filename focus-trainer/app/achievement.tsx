@@ -157,7 +157,7 @@ export default function AchievementScreen() {
   const dayStreak = String(stats.dayStreak);
   const level = String(stats.level);
   const failed = resolvedOutcome === 'failed';
-  const completionTitle = failed ? 'Stay with it tomorrow.' : storyCompleteTitle ?? 'Focus Deepens';
+  const completionTitle = failed ? 'Stay with it tomorrow.' : storyCompleteTitle ?? 'Daily Story Complete';
 
   return (
     <Pressable
