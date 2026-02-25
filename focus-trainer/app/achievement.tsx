@@ -157,7 +157,9 @@ export default function AchievementScreen() {
   const dayStreak = String(stats.dayStreak);
   const level = String(stats.level);
   const failed = resolvedOutcome === 'failed';
-  const completionTitle = failed ? 'Stay with it tomorrow.' : storyCompleteTitle ?? 'Daily Story Complete';
+  const completionTitle = failed
+    ? 'Your mind wandered. Rest, and return tomorrow.'
+    : storyCompleteTitle ?? 'Daily Story Complete';
 
   return (
     <Pressable
@@ -183,8 +185,8 @@ export default function AchievementScreen() {
       <View style={[styles.corner, styles.cornerBottomRight]} />
 
       <View style={styles.content}>
-        <Text style={styles.label}>{failed ? 'Session Ended' : 'Daily Story Complete'}</Text>
-        <Text style={styles.title}>{completionTitle}</Text>
+        {!failed ? <Text style={styles.label}>Daily Story Complete</Text> : null}
+        <Text style={[styles.title, failed ? styles.failedTitle : null]}>{completionTitle}</Text>
         {!failed && storyCompleteNote ? (
           <Text style={styles.completeNote}>{storyCompleteNote}</Text>
         ) : null}
@@ -230,6 +232,9 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSizes.title,
     fontWeight: '300',
     marginTop: theme.spacing.sm,
+  },
+  failedTitle: {
+    textAlign: 'center',
   },
   subtitle: {
     color: theme.colors.textFaint,
