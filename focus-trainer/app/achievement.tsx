@@ -68,7 +68,6 @@ export default function AchievementScreen() {
   const router = useRouter();
   const { outcome } = useLocalSearchParams<{ outcome?: SessionOutcome }>();
   const [resolvedOutcome, setResolvedOutcome] = useState<SessionOutcome>('completed');
-  const [storyCompleteTitle, setStoryCompleteTitle] = useState<string | null>(null);
   const [storyCompleteNote, setStoryCompleteNote] = useState<string | null>(null);
   const [stats, setStats] = useState<FocusStats>({
     storiesCompleted: 0,
@@ -139,7 +138,6 @@ export default function AchievementScreen() {
         return;
       }
 
-      setStoryCompleteTitle(story.completeTitle ?? null);
       setStoryCompleteNote(story.completeNote ?? null);
     }
 
@@ -159,7 +157,7 @@ export default function AchievementScreen() {
   const failed = resolvedOutcome === 'failed';
   const completionTitle = failed
     ? 'Your mind wandered. Rest, and return tomorrow.'
-    : storyCompleteTitle ?? 'Daily Story Complete';
+    : storyCompleteNote ?? "Believe you can focus, and you've already begun.";
 
   return (
     <Pressable
@@ -187,14 +185,6 @@ export default function AchievementScreen() {
       <View style={styles.content}>
         {!failed ? <Text style={styles.label}>Daily Story Complete</Text> : null}
         <Text style={[styles.title, failed ? styles.failedTitle : null]}>{completionTitle}</Text>
-        {!failed && storyCompleteNote ? (
-          <Text style={styles.completeNote}>{storyCompleteNote}</Text>
-        ) : null}
-        <Text style={styles.subtitle}>
-          {"You've reached Level "}
-          {level}
-        </Text>
-
         <View style={styles.statsRow}>
           <Stat label="Stories" value={storiesCompleted} />
           <View style={styles.divider} />
@@ -202,7 +192,9 @@ export default function AchievementScreen() {
           <View style={styles.divider} />
           <Stat label="Streak" value={dayStreak} />
         </View>
-
+        {!failed ? (
+          <Text style={styles.subtitle}>{`You've reached level ${level}, see you tomorrow.`}</Text>
+        ) : null}
       </View>
     </Pressable>
   );
@@ -232,6 +224,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSizes.title,
     fontWeight: '300',
     marginTop: theme.spacing.sm,
+    textAlign: 'center',
   },
   failedTitle: {
     textAlign: 'center',
@@ -240,7 +233,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textFaint,
     fontFamily: theme.fonts.loraItalic,
     fontSize: theme.fontSizes.bodyLarge,
-    marginTop: theme.spacing.xs,
+    marginTop: theme.spacing.lg,
   },
   statsRow: {
     alignItems: 'center',
@@ -273,14 +266,6 @@ const styles = StyleSheet.create({
     marginHorizontal: theme.spacing.sm,
     opacity: 0.12,
     width: 1,
-  },
-  completeNote: {
-    color: theme.colors.textFaint,
-    fontFamily: theme.fonts.loraRegular,
-    fontSize: theme.fontSizes.body,
-    marginTop: theme.spacing.sm,
-    opacity: 0.7,
-    textAlign: 'center',
   },
   corner: {
     borderColor: theme.colors.accent,
