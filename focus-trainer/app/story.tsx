@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   AppState,
+  Easing,
   Platform,
   Pressable,
   StyleSheet,
@@ -26,7 +27,8 @@ const LAST_OUTCOME_TODAY_KEY = 'dailyfocus_last_outcome_today_v1';
 const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
 const TONIGHT_REMINDER_ID_KEY = 'dailyfocus_tonight_reminder_notification_id_v1';
 const REMINDER_NOTIFICATION_TYPE = 'daily_reminder';
-const PASSAGE_FADE_MS = Platform.OS === 'ios' ? 980 : 820;
+const TRANSITION_FADE_MS = Platform.OS === 'ios' ? 980 : 820;
+const TRANSITION_FADE_EASING = Easing.inOut(Easing.ease);
 
 type FocusStats = {
   storiesCompleted: number;
@@ -187,6 +189,19 @@ function balancePassageLines(text: string, targetLineLength = 30): string {
   return renderedLines.join('\n');
 }
 
+function runFade(value: Animated.Value, toValue: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    Animated.timing(value, {
+      toValue,
+      duration: TRANSITION_FADE_MS,
+      easing: TRANSITION_FADE_EASING,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      resolve(finished);
+    });
+  });
+}
+
 async function syncTonightReminder(): Promise<void> {
   const scheduledId = await AsyncStorage.getItem(TONIGHT_REMINDER_ID_KEY);
   const permissions = await Notifications.getPermissionsAsync();
@@ -321,13 +336,15 @@ export default function StoryScreen() {
   const [passageIndex, setPassageIndex] = useState(0);
   const [blockedHint, setBlockedHint] = useState<{ x: number; y: number } | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
-  const fade = useRef(new Animated.Value(1)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+  const passageOpacity = useRef(new Animated.Value(1)).current;
   const blockedHintOpacity = useRef(new Animated.Value(0)).current;
   const blockedHintRunIdRef = useRef(0);
   const passageStartedAtRef = useRef(Date.now());
   const startedAtRef = useRef(Date.now());
-  const isAnimatingRef = useRef(false);
+  const isTransitioningFadeRef = useRef(false);
   const isCompletingRef = useRef(false);
+  const isRoutingRef = useRef(false);
   const sessionEndedRef = useRef(false);
 
   useEffect(() => {
@@ -345,15 +362,35 @@ export default function StoryScreen() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
     setPassageIndex(0);
-    passageStartedAtRef.current = Date.now();
+    passageStartedAtRef.current = Number.POSITIVE_INFINITY;
     startedAtRef.current = Date.now();
-    isAnimatingRef.current = false;
+    isTransitioningFadeRef.current = true;
     isCompletingRef.current = false;
+    isRoutingRef.current = false;
     sessionEndedRef.current = false;
     setIsCompleting(false);
-    fade.setValue(1);
-  }, [currentStoryIndex, fade]);
+    contentOpacity.stopAnimation();
+    passageOpacity.stopAnimation();
+    contentOpacity.setValue(0);
+    passageOpacity.setValue(1);
+
+    void (async () => {
+      const finished = await runFade(contentOpacity, 1);
+      if (!finished || cancelled) {
+        return;
+      }
+
+      isTransitioningFadeRef.current = false;
+      passageStartedAtRef.current = Date.now();
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [contentOpacity, currentStoryIndex, passageOpacity]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -364,6 +401,8 @@ export default function StoryScreen() {
       if (nextState === 'inactive' || nextState === 'background') {
         sessionEndedRef.current = true;
         isCompletingRef.current = true;
+        isRoutingRef.current = true;
+        isTransitioningFadeRef.current = false;
         setIsCompleting(true);
         const todayDateKey = getTodayDateKey();
         void (async () => {
@@ -389,6 +428,8 @@ export default function StoryScreen() {
       if (normalizeStoredDateKey(completedRaw ?? '') === getTodayDateKey()) {
         sessionEndedRef.current = true;
         isCompletingRef.current = true;
+        isRoutingRef.current = true;
+        isTransitioningFadeRef.current = false;
         setIsCompleting(true);
         router.replace('/achievement?outcome=completed' as never);
       }
@@ -425,17 +466,17 @@ export default function StoryScreen() {
   };
 
   const handleAdvance = async (event: GestureResponderEvent) => {
-    if (sessionEndedRef.current || isCompletingRef.current) {
+    if (
+      sessionEndedRef.current ||
+      isCompletingRef.current ||
+      isRoutingRef.current ||
+      isTransitioningFadeRef.current
+    ) {
       showBlockedHint(event);
       return;
     }
 
     if (!story) {
-      return;
-    }
-
-    if (isAnimatingRef.current) {
-      showBlockedHint(event);
       return;
     }
 
@@ -450,7 +491,11 @@ export default function StoryScreen() {
     if (isLastPassage) {
       sessionEndedRef.current = true;
       isCompletingRef.current = true;
+      isTransitioningFadeRef.current = true;
+      await runFade(contentOpacity, 0);
+      isTransitioningFadeRef.current = false;
       setIsCompleting(true);
+      isRoutingRef.current = true;
       const elapsedSeconds = Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000));
       const updated = await completeStory(elapsedSeconds);
       await AsyncStorage.setItem(LAST_COMPLETED_STORY_ID_KEY, story.id);
@@ -470,23 +515,26 @@ export default function StoryScreen() {
       return;
     }
 
-    isAnimatingRef.current = true;
+    isTransitioningFadeRef.current = true;
+    await runFade(passageOpacity, 0);
+    if (sessionEndedRef.current || isCompletingRef.current || isRoutingRef.current) {
+      return;
+    }
 
-    Animated.timing(fade, {
-      toValue: 0,
-      duration: PASSAGE_FADE_MS,
-      useNativeDriver: true,
-    }).start(() => {
-      setPassageIndex((prev) => prev + 1);
-      Animated.timing(fade, {
-        toValue: 1,
-        duration: PASSAGE_FADE_MS,
-        useNativeDriver: true,
-      }).start(() => {
-        passageStartedAtRef.current = Date.now();
-        isAnimatingRef.current = false;
+    setPassageIndex((prev) => prev + 1);
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        resolve();
       });
     });
+
+    await runFade(passageOpacity, 1);
+    if (sessionEndedRef.current || isCompletingRef.current || isRoutingRef.current) {
+      return;
+    }
+
+    passageStartedAtRef.current = Date.now();
+    isTransitioningFadeRef.current = false;
   };
 
   if (!story) {
@@ -498,7 +546,7 @@ export default function StoryScreen() {
   return (
     <Pressable onPress={handleAdvance} style={styles.container}>
       {!isCompleting ? (
-        <>
+        <Animated.View style={[styles.storyContent, { opacity: contentOpacity }]}>
           <View style={styles.metaBlock}>
             <Text style={styles.title}>
               {story.title}
@@ -511,9 +559,11 @@ export default function StoryScreen() {
             <View pointerEvents="none" style={styles.watermark}>
               <LighthouseWatermark />
             </View>
-            <Animated.Text style={[styles.passage, { opacity: fade }]}>{balancedPassage}</Animated.Text>
+            <Animated.Text style={[styles.passage, { opacity: passageOpacity }]}>
+              {balancedPassage}
+            </Animated.Text>
           </View>
-        </>
+        </Animated.View>
       ) : (
         <View style={styles.completionShield} />
       )}
@@ -540,6 +590,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: theme.colors.background,
     flex: 1,
+  },
+  storyContent: {
+    flex: 1,
+    width: '100%',
   },
   completionShield: {
     flex: 1,

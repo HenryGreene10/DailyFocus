@@ -12,3 +12,4 @@
 - T10: Achievement stat/subtitle copy adjustments (M0) - DONE
 - T11: Story completion lock + blocked-tap handling coverage (M0) - DONE
 - T12: Hard-cut story/achievement routing to prevent overlap (M0) - DONE
+- T13: Unify entry/mid/exit fades with strict transition guards (M0) - DONE
