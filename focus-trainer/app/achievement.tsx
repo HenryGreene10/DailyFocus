@@ -153,7 +153,6 @@ export default function AchievementScreen() {
   const storiesCompleted = String(stats.storiesCompleted);
   const minutesFocused = String(Math.round(stats.minutesFocused));
   const dayStreak = String(stats.dayStreak);
-  const level = String(stats.level);
   const failed = resolvedOutcome === 'failed';
   const completionTitle = failed
     ? 'Your mind wandered. Rest, and return tomorrow.'
@@ -188,13 +187,11 @@ export default function AchievementScreen() {
         <View style={styles.statsRow}>
           <Stat label="Stories" value={storiesCompleted} />
           <View style={styles.divider} />
-          <Stat label="Minutes" value={minutesFocused} />
+          <Stat label="Minutes of Focus" value={minutesFocused} />
           <View style={styles.divider} />
           <Stat label="Streak" value={dayStreak} />
         </View>
-        {!failed ? (
-          <Text style={styles.subtitle}>{`You've reached level ${level}, see you tomorrow.`}</Text>
-        ) : null}
+        {!failed ? <Text style={styles.subtitle}>See you tomorrow.</Text> : null}
       </View>
     </Pressable>
   );

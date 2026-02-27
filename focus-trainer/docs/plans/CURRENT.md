@@ -8,3 +8,5 @@
 - T6: Smoke test instructions in README (M0) - DONE
 - T7: Achievement completion copy/layout update (M0) - DONE
 - T8: Preserve authored capitalization in story passage rendering (M0) - DONE
+- T9: Story tap guard during fade + smooth completion routing (M0) - DONE
+- T10: Achievement stat/subtitle copy adjustments (M0) - DONE
