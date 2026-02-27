@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { theme } from '@/constants/theme';
@@ -12,43 +12,12 @@ const steps = [
   'If you leave, the session ends.',
 ] as const;
 
-const CORNERS = [
-  { key: 'tl', style: { top: theme.spacing.xl, left: theme.spacing.xl } },
-  { key: 'tr', style: { top: theme.spacing.xl, right: theme.spacing.xl } },
-  { key: 'bl', style: { bottom: theme.spacing.xl, left: theme.spacing.xl } },
-  { key: 'br', style: { bottom: theme.spacing.xl, right: theme.spacing.xl } },
-] as const;
-
 export default function OnboardingScreen() {
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
-  const pulse = useRef(new Animated.Value(0.3)).current;
   const stepFade = useRef(new Animated.Value(1)).current;
   const screenFade = useRef(new Animated.Value(1)).current;
   const isTransitioningRef = useRef(false);
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, {
-          toValue: 0.8,
-          duration: 1250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulse, {
-          toValue: 0.3,
-          duration: 1250,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-
-    animation.start();
-
-    return () => {
-      animation.stop();
-    };
-  }, [pulse]);
 
   const handleNext = async () => {
     if (isTransitioningRef.current) {
@@ -82,19 +51,13 @@ export default function OnboardingScreen() {
       duration: Platform.OS === 'ios' ? 360 : 280,
       useNativeDriver: true,
     }).start(() => {
-      router.replace('/' as never);
+      router.replace('/story' as never);
     });
   };
 
   return (
     <Animated.View style={{ flex: 1, opacity: screenFade }}>
       <Pressable onPress={handleNext} style={styles.container}>
-        {CORNERS.map((corner) => (
-          <Text key={corner.key} style={[styles.cornerStar, corner.style]}>
-            ✦
-          </Text>
-        ))}
-
         <View style={styles.content}>
           <View style={styles.titleArea}>
             <Text style={styles.title}>DailyFocus</Text>
@@ -105,8 +68,6 @@ export default function OnboardingScreen() {
             </Animated.Text>
           </View>
         </View>
-
-        <Animated.Text style={[styles.hint, { opacity: pulse }]}>{''}</Animated.Text>
       </Pressable>
     </Animated.View>
   );
@@ -128,10 +89,10 @@ const styles = StyleSheet.create({
   },
   instructionArea: {
     alignItems: 'center',
-    borderTopColor: '#C4A88266',
-    borderTopWidth: 1,
+    justifyContent: 'center',
     marginTop: theme.spacing.lg,
-    paddingTop: theme.spacing.sm,
+    minHeight: Platform.OS === 'ios' ? 110 : 98,
+    width: '100%',
   },
   title: {
     color: theme.colors.textPrimary,
@@ -146,21 +107,5 @@ const styles = StyleSheet.create({
     fontSize: Platform.OS === 'ios' ? theme.fontSizes.bodyLarge + 1 : theme.fontSizes.bodyLarge,
     lineHeight: Platform.OS === 'ios' ? 30 : 28,
     textAlign: 'center',
-  },
-  hint: {
-    bottom: theme.spacing.lg,
-    color: theme.colors.textFaint,
-    fontFamily: theme.fonts.loraRegular,
-    fontSize: theme.fontSizes.body,
-    letterSpacing: 2,
-    position: 'absolute',
-    textTransform: 'uppercase',
-  },
-  cornerStar: {
-    color: theme.colors.accentLight,
-    fontFamily: theme.fonts.loraRegular,
-    fontSize: theme.fontSizes.bodyLarge,
-    opacity: 0.3,
-    position: 'absolute',
   },
 });

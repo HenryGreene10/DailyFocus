@@ -148,9 +148,10 @@ export default function AchievementScreen() {
   const minutesFocused = String(Math.round(stats.minutesFocused));
   const dayStreak = String(stats.dayStreak);
   const failed = resolvedOutcome === 'failed';
+  const fallbackCompleteTitle = "Believe you can focus, and you've already begun.";
   const completionTitle = failed
     ? 'Your mind wandered. Rest, and return tomorrow.'
-    : storyCompleteNote ?? "Believe you can focus, and you've already begun.";
+    : (storyCompleteNote?.trim() || fallbackCompleteTitle);
 
   return (
     <Pressable
@@ -170,19 +171,12 @@ export default function AchievementScreen() {
           : undefined
       }
       style={styles.container}>
-      <View style={[styles.corner, styles.cornerTopLeft]} />
-      <View style={[styles.corner, styles.cornerTopRight]} />
-      <View style={[styles.corner, styles.cornerBottomLeft]} />
-      <View style={[styles.corner, styles.cornerBottomRight]} />
-
       <View style={styles.content}>
         {!failed ? <Text style={styles.label}>Daily Story Complete</Text> : null}
         <Text style={[styles.title, failed ? styles.failedTitle : null]}>{completionTitle}</Text>
         <View style={styles.statsRow}>
           <Stat label="Stories" value={storiesCompleted} />
-          <View style={styles.divider} />
           <Stat label="Minutes of Focus" value={minutesFocused} />
-          <View style={styles.divider} />
           <Stat label="Streak" value={dayStreak} />
         </View>
         {!failed ? <Text style={styles.subtitle}>See you tomorrow.</Text> : null}
@@ -229,11 +223,13 @@ const styles = StyleSheet.create({
   statsRow: {
     alignItems: 'center',
     flexDirection: 'row',
+    justifyContent: 'center',
     marginTop: theme.spacing.xxl,
   },
   statItem: {
     alignItems: 'center',
-    minWidth: 90,
+    marginHorizontal: theme.spacing.md,
+    minWidth: 84,
   },
   statValue: {
     color: theme.colors.textSecondary,
@@ -250,43 +246,5 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
     opacity: 0.72,
     textTransform: 'uppercase',
-  },
-  divider: {
-    backgroundColor: theme.colors.accent,
-    height: 70,
-    marginHorizontal: theme.spacing.sm,
-    opacity: 0.12,
-    width: 1,
-  },
-  corner: {
-    borderColor: theme.colors.accent,
-    height: 40,
-    opacity: 0.2,
-    position: 'absolute',
-    width: 40,
-  },
-  cornerTopLeft: {
-    borderLeftWidth: 1,
-    borderTopWidth: 1,
-    left: 50,
-    top: 50,
-  },
-  cornerTopRight: {
-    borderRightWidth: 1,
-    borderTopWidth: 1,
-    right: 50,
-    top: 50,
-  },
-  cornerBottomLeft: {
-    borderBottomWidth: 1,
-    borderLeftWidth: 1,
-    bottom: 50,
-    left: 50,
-  },
-  cornerBottomRight: {
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    bottom: 50,
-    right: 50,
   },
 });

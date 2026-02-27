@@ -13,3 +13,6 @@
 - T11: Story completion lock + blocked-tap handling coverage (M0) - DONE
 - T12: Hard-cut story/achievement routing to prevent overlap (M0) - DONE
 - T13: Unify entry/mid/exit fades with strict transition guards (M0) - DONE
+- T14: Remove decorative illustration layers across intro/story/achievement (M0) - DONE
+- T15: Intro instruction layout stabilization (no vertical jump) (M0) - DONE
+- T16: Home first-launch only + onboarding every session flow (M0) - DONE

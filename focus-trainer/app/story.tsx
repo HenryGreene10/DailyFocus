@@ -14,7 +14,6 @@ import {
   type GestureResponderEvent,
   View,
 } from 'react-native';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { stage1Stories } from '@/constants/stories';
 import { theme } from '@/constants/theme';
@@ -244,34 +243,6 @@ async function syncTonightReminder(): Promise<void> {
   });
 
   await AsyncStorage.setItem(TONIGHT_REMINDER_ID_KEY, identifier);
-}
-
-function LighthouseWatermark() {
-  return (
-    <Svg fill="none" height="240" viewBox="0 0 240 240" width="240">
-      <Path d="M98 46H142L132 118H108L98 46Z" stroke={theme.colors.textSecondary} strokeWidth={2} />
-      <Rect
-        height={48}
-        rx={2}
-        stroke={theme.colors.textSecondary}
-        strokeWidth={2}
-        width={24}
-        x={108}
-        y={118}
-      />
-      <Rect
-        height={10}
-        stroke={theme.colors.textSecondary}
-        strokeWidth={2}
-        width={36}
-        x={102}
-        y={36}
-      />
-      <Circle cx={120} cy={40} r={2} fill={theme.colors.textSecondary} />
-      <Path d="M56 178C70 169 84 187 98 178C112 169 126 187 140 178C154 169 168 187 182 178" stroke={theme.colors.textSecondary} strokeWidth={2} />
-      <Path d="M46 192C62 183 78 201 94 192C110 183 126 201 142 192C158 183 174 201 190 192" stroke={theme.colors.textSecondary} strokeWidth={2} />
-    </Svg>
-  );
 }
 
 async function loadStats(): Promise<FocusStats> {
@@ -556,9 +527,6 @@ export default function StoryScreen() {
           </View>
 
           <View style={styles.centerBlock}>
-            <View pointerEvents="none" style={styles.watermark}>
-              <LighthouseWatermark />
-            </View>
             <Animated.Text style={[styles.passage, { opacity: passageOpacity }]}>
               {balancedPassage}
             </Animated.Text>
@@ -614,10 +582,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingBottom: 36,
     width: '100%',
-  },
-  watermark: {
-    opacity: 0.07,
-    position: 'absolute',
   },
   passage: {
     color: theme.colors.textSecondary,

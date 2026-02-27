@@ -5,18 +5,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { theme } from '@/constants/theme';
 
-let hasShownLaunchOnboarding = false;
 const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
 const LAST_OUTCOME_TODAY_KEY = 'dailyfocus_last_outcome_today_v1';
 const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
-
-function getTodayDateKey(): string {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+const HAS_SEEN_HOME_KEY = 'dailyfocus_has_seen_home_v1';
 
 function normalizeStoredDateKey(raw: string): string | null {
   if (!raw) {
@@ -38,16 +30,17 @@ function normalizeStoredDateKey(raw: string): string | null {
   return `${year}-${month}-${day}`;
 }
 
-const CORNERS = [
-  { key: 'tl', style: { top: theme.spacing.xl, left: theme.spacing.xl } },
-  { key: 'tr', style: { top: theme.spacing.xl, right: theme.spacing.xl } },
-  { key: 'bl', style: { bottom: theme.spacing.xl, left: theme.spacing.xl } },
-  { key: 'br', style: { bottom: theme.spacing.xl, right: theme.spacing.xl } },
-] as const;
+function getTodayDateKey(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const [showHome, setShowHome] = useState(hasShownLaunchOnboarding);
+  const [showHome, setShowHome] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -69,8 +62,8 @@ export default function WelcomeScreen() {
         return;
       }
 
-      if (!hasShownLaunchOnboarding) {
-        hasShownLaunchOnboarding = true;
+      const hasSeenHome = (await AsyncStorage.getItem(HAS_SEEN_HOME_KEY)) === '1';
+      if (hasSeenHome) {
         router.replace('/onboarding' as never);
         return;
       }
@@ -87,25 +80,11 @@ export default function WelcomeScreen() {
     <Pressable
       onPress={() => {
         void (async () => {
-          const completionToday =
-            normalizeStoredDateKey((await AsyncStorage.getItem(LAST_COMPLETED_KEY)) ?? '') ===
-            getTodayDateKey();
-
-          if (completionToday) {
-            router.replace('/achievement?outcome=completed' as never);
-            return;
-          }
-
-          router.push('/story' as never);
+          await AsyncStorage.setItem(HAS_SEEN_HOME_KEY, '1');
+          router.replace('/onboarding' as never);
         })();
       }}
       style={styles.container}>
-      {CORNERS.map((corner) => (
-        <Text key={corner.key} style={[styles.cornerStar, corner.style]}>
-          ✦
-        </Text>
-      ))}
-
       <View style={styles.centerContent}>
         <Text style={styles.title}>DailyFocus</Text>
         <Text style={styles.subtitle}>tap to begin your practice</Text>
@@ -137,12 +116,5 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSizes.body,
     letterSpacing: 3,
     marginTop: theme.spacing.xs,
-  },
-  cornerStar: {
-    color: theme.colors.accentLight,
-    fontFamily: theme.fonts.loraRegular,
-    fontSize: theme.fontSizes.bodyLarge,
-    opacity: 0.3,
-    position: 'absolute',
   },
 });
