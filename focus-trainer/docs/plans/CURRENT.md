@@ -6,3 +6,5 @@
 - T4: AsyncStorage Progress persistence (M0) - DONE
 - T5: Minimal placeholder UI components + theme tokens (M0) - DONE
 - T6: Smoke test instructions in README (M0) - DONE
+- T7: Achievement completion copy/layout update (M0) - DONE
+- T8: Preserve authored capitalization in story passage rendering (M0) - DONE

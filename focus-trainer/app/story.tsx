@@ -131,13 +131,8 @@ function getTonightReminderTriggerDate(): Date {
   return tonight;
 }
 
-function balancePassageLines(text: string, targetLineLength = 30): string {
-  const normalized = text.replace(/\s+/g, ' ').trim();
-  if (!normalized) {
-    return '';
-  }
-
-  const words = normalized.split(' ');
+function wrapLine(line: string, targetLineLength: number): string[] {
+  const words = line.split(' ');
   const lines: string[] = [];
   let currentLine = words[0];
 
@@ -168,7 +163,29 @@ function balancePassageLines(text: string, targetLineLength = 30): string {
     }
   }
 
-  return lines.join('\n');
+  return lines;
+}
+
+function balancePassageLines(text: string, targetLineLength = 30): string {
+  const normalizedText = text.replace(/\r\n/g, '\n').trim();
+  if (!normalizedText) {
+    return '';
+  }
+
+  const authoredLines = normalizedText.split('\n');
+  const renderedLines: string[] = [];
+
+  for (const authoredLine of authoredLines) {
+    const normalizedLine = authoredLine.replace(/\s+/g, ' ').trim();
+    if (!normalizedLine) {
+      renderedLines.push('');
+      continue;
+    }
+
+    renderedLines.push(...wrapLine(normalizedLine, targetLineLength));
+  }
+
+  return renderedLines.join('\n');
 }
 
 async function syncTonightReminder(): Promise<void> {
