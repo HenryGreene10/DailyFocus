@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { theme } from '@/constants/theme';
 
@@ -56,42 +57,74 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <Animated.View style={{ flex: 1, opacity: screenFade }}>
-      <Pressable onPress={handleNext} style={styles.container}>
-        <View style={styles.content}>
-          <View style={styles.titleArea}>
+    <SafeAreaView style={styles.safeArea}>
+      <Animated.View style={[styles.screen, { opacity: screenFade }]}>
+        <Pressable onPress={handleNext} style={styles.container}>
+          <View style={styles.titleRegion}>
             <Text style={styles.title}>DailyFocus</Text>
           </View>
-          <View style={styles.instructionArea}>
-            <Animated.Text style={[styles.message, { opacity: stepFade }]}>
-              {steps[stepIndex]}
-            </Animated.Text>
+
+          <View style={styles.instructionRegion}>
+            <View style={styles.divider} />
+            <View style={styles.messageFrame}>
+              <Animated.Text style={[styles.message, { opacity: stepFade }]}>
+                {steps[stepIndex]}
+              </Animated.Text>
+            </View>
           </View>
-        </View>
-      </Pressable>
-    </Animated.View>
+
+          <View style={styles.ctaRegion}>
+            <Text style={styles.cta}>Tap to Continue</Text>
+          </View>
+        </Pressable>
+      </Animated.View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
+  safeArea: {
     backgroundColor: theme.colors.background,
     flex: 1,
-    justifyContent: 'center',
   },
-  content: {
+  screen: {
+    flex: 1,
+  },
+  container: {
     alignItems: 'center',
+    flex: 1,
     paddingHorizontal: 44,
   },
-  titleArea: {
+  titleRegion: {
     alignItems: 'center',
+    height: Platform.OS === 'ios' ? 220 : 204,
+    justifyContent: 'flex-end',
+    width: '100%',
   },
-  instructionArea: {
+  instructionRegion: {
     alignItems: 'center',
+    height: Platform.OS === 'ios' ? 184 : 168,
+    justifyContent: 'flex-start',
+    width: '100%',
+  },
+  divider: {
+    backgroundColor: theme.colors.accent,
+    height: StyleSheet.hairlineWidth,
+    marginBottom: theme.spacing.md,
+    opacity: 0.28,
+    width: '72%',
+  },
+  messageFrame: {
+    alignItems: 'center',
+    height: Platform.OS === 'ios' ? 124 : 112,
     justifyContent: 'center',
-    marginTop: theme.spacing.lg,
-    minHeight: Platform.OS === 'ios' ? 110 : 98,
+    width: '100%',
+  },
+  ctaRegion: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingBottom: theme.spacing.xl,
     width: '100%',
   },
   title: {
@@ -107,5 +140,13 @@ const styles = StyleSheet.create({
     fontSize: Platform.OS === 'ios' ? theme.fontSizes.bodyLarge + 1 : theme.fontSizes.bodyLarge,
     lineHeight: Platform.OS === 'ios' ? 30 : 28,
     textAlign: 'center',
+  },
+  cta: {
+    color: theme.colors.textFaint,
+    fontFamily: theme.fonts.loraRegular,
+    fontSize: theme.fontSizes.small,
+    letterSpacing: 2,
+    opacity: 0.72,
+    textTransform: 'uppercase',
   },
 });

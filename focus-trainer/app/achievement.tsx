@@ -176,7 +176,9 @@ export default function AchievementScreen() {
         <Text style={[styles.title, failed ? styles.failedTitle : null]}>{completionTitle}</Text>
         <View style={styles.statsRow}>
           <Stat label="Stories" value={storiesCompleted} />
+          <View style={styles.divider} />
           <Stat label="Minutes of Focus" value={minutesFocused} />
+          <View style={styles.divider} />
           <Stat label="Streak" value={dayStreak} />
         </View>
         {!failed ? <Text style={styles.subtitle}>See you tomorrow.</Text> : null}
@@ -228,8 +230,14 @@ const styles = StyleSheet.create({
   },
   statItem: {
     alignItems: 'center',
-    marginHorizontal: theme.spacing.md,
+    marginHorizontal: theme.spacing.sm,
     minWidth: 84,
+  },
+  divider: {
+    backgroundColor: theme.colors.accent,
+    height: 58,
+    opacity: 0.16,
+    width: StyleSheet.hairlineWidth,
   },
   statValue: {
     color: theme.colors.textSecondary,
