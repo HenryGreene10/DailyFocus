@@ -10,3 +10,5 @@
 - T8: Preserve authored capitalization in story passage rendering (M0) - DONE
 - T9: Story tap guard during fade + smooth completion routing (M0) - DONE
 - T10: Achievement stat/subtitle copy adjustments (M0) - DONE
+- T11: Story completion lock + blocked-tap handling coverage (M0) - DONE
+- T12: Hard-cut story/achievement routing to prevent overlap (M0) - DONE

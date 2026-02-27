@@ -320,12 +320,14 @@ export default function StoryScreen() {
       : undefined;
   const [passageIndex, setPassageIndex] = useState(0);
   const [blockedHint, setBlockedHint] = useState<{ x: number; y: number } | null>(null);
+  const [isCompleting, setIsCompleting] = useState(false);
   const fade = useRef(new Animated.Value(1)).current;
   const blockedHintOpacity = useRef(new Animated.Value(0)).current;
   const blockedHintRunIdRef = useRef(0);
   const passageStartedAtRef = useRef(Date.now());
   const startedAtRef = useRef(Date.now());
   const isAnimatingRef = useRef(false);
+  const isCompletingRef = useRef(false);
   const sessionEndedRef = useRef(false);
 
   useEffect(() => {
@@ -347,7 +349,9 @@ export default function StoryScreen() {
     passageStartedAtRef.current = Date.now();
     startedAtRef.current = Date.now();
     isAnimatingRef.current = false;
+    isCompletingRef.current = false;
     sessionEndedRef.current = false;
+    setIsCompleting(false);
     fade.setValue(1);
   }, [currentStoryIndex, fade]);
 
@@ -359,6 +363,8 @@ export default function StoryScreen() {
 
       if (nextState === 'inactive' || nextState === 'background') {
         sessionEndedRef.current = true;
+        isCompletingRef.current = true;
+        setIsCompleting(true);
         const todayDateKey = getTodayDateKey();
         void (async () => {
           await AsyncStorage.setItem(LAST_OUTCOME_TODAY_KEY, 'failed');
@@ -382,6 +388,8 @@ export default function StoryScreen() {
       const completedRaw = await AsyncStorage.getItem(LAST_COMPLETED_KEY);
       if (normalizeStoredDateKey(completedRaw ?? '') === getTodayDateKey()) {
         sessionEndedRef.current = true;
+        isCompletingRef.current = true;
+        setIsCompleting(true);
         router.replace('/achievement?outcome=completed' as never);
       }
     })();
@@ -417,7 +425,8 @@ export default function StoryScreen() {
   };
 
   const handleAdvance = async (event: GestureResponderEvent) => {
-    if (sessionEndedRef.current) {
+    if (sessionEndedRef.current || isCompletingRef.current) {
+      showBlockedHint(event);
       return;
     }
 
@@ -440,6 +449,8 @@ export default function StoryScreen() {
 
     if (isLastPassage) {
       sessionEndedRef.current = true;
+      isCompletingRef.current = true;
+      setIsCompleting(true);
       const elapsedSeconds = Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000));
       const updated = await completeStory(elapsedSeconds);
       await AsyncStorage.setItem(LAST_COMPLETED_STORY_ID_KEY, story.id);
@@ -486,20 +497,26 @@ export default function StoryScreen() {
 
   return (
     <Pressable onPress={handleAdvance} style={styles.container}>
-      <View style={styles.metaBlock}>
-        <Text style={styles.title}>
-          {story.title}
-          {' by '}
-          {story.author}
-        </Text>
-      </View>
+      {!isCompleting ? (
+        <>
+          <View style={styles.metaBlock}>
+            <Text style={styles.title}>
+              {story.title}
+              {' by '}
+              {story.author}
+            </Text>
+          </View>
 
-      <View style={styles.centerBlock}>
-        <View pointerEvents="none" style={styles.watermark}>
-          <LighthouseWatermark />
-        </View>
-        <Animated.Text style={[styles.passage, { opacity: fade }]}>{balancedPassage}</Animated.Text>
-      </View>
+          <View style={styles.centerBlock}>
+            <View pointerEvents="none" style={styles.watermark}>
+              <LighthouseWatermark />
+            </View>
+            <Animated.Text style={[styles.passage, { opacity: fade }]}>{balancedPassage}</Animated.Text>
+          </View>
+        </>
+      ) : (
+        <View style={styles.completionShield} />
+      )}
       {blockedHint ? (
         <Animated.Text
           pointerEvents="none"
@@ -523,6 +540,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: theme.colors.background,
     flex: 1,
+  },
+  completionShield: {
+    flex: 1,
+    width: '100%',
   },
   metaBlock: {
     alignItems: 'center',

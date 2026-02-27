@@ -146,8 +146,8 @@ export default function RootLayout() {
       <Stack screenOptions={{ animation: 'fade', headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="onboarding" />
-        <Stack.Screen name="story" />
-        <Stack.Screen name="achievement" />
+        <Stack.Screen name="story" options={{ animation: 'none' }} />
+        <Stack.Screen name="achievement" options={{ animation: 'none' }} />
       </Stack>
       <StatusBar style="dark" />
     </>

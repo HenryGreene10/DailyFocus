@@ -15,8 +15,6 @@ const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
 type FocusStats = {
   storiesCompleted: number;
   minutesFocused: number;
-  xp: number;
-  level: number;
   lastCompletedDate: string;
   dayStreak: number;
 };
@@ -72,8 +70,6 @@ export default function AchievementScreen() {
   const [stats, setStats] = useState<FocusStats>({
     storiesCompleted: 0,
     minutesFocused: 0,
-    xp: 0,
-    level: 1,
     lastCompletedDate: '',
     dayStreak: 0,
   });
@@ -92,8 +88,6 @@ export default function AchievementScreen() {
         setStats({
           storiesCompleted: sanitizeNumber(parsed.storiesCompleted, 0),
           minutesFocused: sanitizeNumber(parsed.minutesFocused, 0),
-          xp: sanitizeNumber(parsed.xp, 0),
-          level: sanitizeNumber(parsed.level, 1),
           lastCompletedDate:
             typeof parsed.lastCompletedDate === 'string' ? parsed.lastCompletedDate : '',
           dayStreak: sanitizeNumber(parsed.dayStreak, 0),
