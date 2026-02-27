@@ -27,7 +27,6 @@ const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
 const TONIGHT_REMINDER_ID_KEY = 'dailyfocus_tonight_reminder_notification_id_v1';
 const REMINDER_NOTIFICATION_TYPE = 'daily_reminder';
 const PASSAGE_FADE_MS = Platform.OS === 'ios' ? 980 : 820;
-const COMPLETION_PAUSE_MS = 450;
 
 type FocusStats = {
   storiesCompleted: number;
@@ -426,13 +425,14 @@ export default function StoryScreen() {
       return;
     }
 
-    const elapsedSincePassageShownMs = Date.now() - passageStartedAtRef.current;
-    if (elapsedSincePassageShownMs < story.minDisplayMs) {
+    if (isAnimatingRef.current) {
       showBlockedHint(event);
       return;
     }
 
-    if (isAnimatingRef.current) {
+    const elapsedSincePassageShownMs = Date.now() - passageStartedAtRef.current;
+    if (elapsedSincePassageShownMs < story.minDisplayMs) {
+      showBlockedHint(event);
       return;
     }
 
@@ -445,7 +445,6 @@ export default function StoryScreen() {
       await AsyncStorage.setItem(LAST_COMPLETED_STORY_ID_KEY, story.id);
       const nextStoryIndex = currentStoryIndex + 1;
       await AsyncStorage.setItem(CURRENT_STORY_INDEX_KEY, String(nextStoryIndex));
-      setCurrentStoryIndex(nextStoryIndex);
 
       if (updated.storiesCompleted === 1) {
         const permissions = await Notifications.getPermissionsAsync();
@@ -456,9 +455,6 @@ export default function StoryScreen() {
 
       await syncTonightReminder();
       await Haptics.selectionAsync();
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, COMPLETION_PAUSE_MS);
-      });
       router.replace('/achievement?outcome=completed' as never);
       return;
     }
