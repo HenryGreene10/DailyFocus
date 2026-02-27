@@ -569,7 +569,12 @@ const styles = StyleSheet.create({
   },
   metaBlock: {
     alignItems: 'center',
+    left: 0,
     paddingTop: 70,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    zIndex: 1,
   },
   title: {
     color: theme.colors.textFaint,
@@ -580,7 +585,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    paddingBottom: 36,
     width: '100%',
   },
   passage: {

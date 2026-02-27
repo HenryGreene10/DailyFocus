@@ -19,3 +19,4 @@
 - T17: Restore structural divider lines in onboarding + achievement (M0) - DONE
 - T18: Lock onboarding regions to eliminate residual vertical jump (M0) - DONE
 - T19: Match previous divider style + recenter onboarding/achievement layout (M0) - DONE
+- T20: Final onboarding/story centering and divider balance pass (M0) - DONE

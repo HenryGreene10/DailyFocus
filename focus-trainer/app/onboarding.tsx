@@ -60,20 +60,24 @@ export default function OnboardingScreen() {
     <SafeAreaView style={styles.safeArea}>
       <Animated.View style={[styles.screen, { opacity: screenFade }]}>
         <Pressable onPress={handleNext} style={styles.container}>
-          <View style={styles.titleRegion}>
-            <Text style={styles.title}>DailyFocus</Text>
-          </View>
-
-          <View style={styles.instructionRegion}>
-            <View style={styles.messageFrame}>
-              <Animated.Text style={[styles.message, { opacity: stepFade }]}>
-                {steps[stepIndex]}
-              </Animated.Text>
+          <View style={styles.contentStack}>
+            <View style={styles.titleRegion}>
+              <Text style={styles.title}>DailyFocus</Text>
             </View>
-          </View>
 
-          <View style={styles.ctaRegion}>
-            <Text style={styles.cta}>Tap to Continue</Text>
+            <View style={styles.instructionRegion}>
+              <View style={styles.dividerBlock}>
+                <View style={styles.messageFrame}>
+                  <Animated.Text style={[styles.message, { opacity: stepFade }]}>
+                    {steps[stepIndex]}
+                  </Animated.Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.ctaRegion}>
+              <Text style={styles.cta}>Tap to Continue</Text>
+            </View>
           </View>
         </Pressable>
       </Animated.View>
@@ -92,35 +96,42 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     flex: 1,
+    justifyContent: 'center',
     paddingHorizontal: 44,
+  },
+  contentStack: {
+    height: Platform.OS === 'ios' ? 430 : 404,
+    width: '100%',
   },
   titleRegion: {
     alignItems: 'center',
-    height: Platform.OS === 'ios' ? 196 : 182,
+    height: Platform.OS === 'ios' ? 126 : 118,
     justifyContent: 'flex-end',
     width: '100%',
   },
   instructionRegion: {
     alignItems: 'center',
+    height: Platform.OS === 'ios' ? 212 : 196,
+    justifyContent: 'flex-start',
+    width: '100%',
+  },
+  dividerBlock: {
     borderTopColor: '#C4A88266',
     borderTopWidth: 1,
-    height: Platform.OS === 'ios' ? 170 : 156,
-    justifyContent: 'flex-start',
-    marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
+    marginTop: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
     width: '100%',
   },
   messageFrame: {
     alignItems: 'center',
-    height: Platform.OS === 'ios' ? 112 : 102,
+    height: Platform.OS === 'ios' ? 118 : 108,
     justifyContent: 'center',
     width: '100%',
   },
   ctaRegion: {
     alignItems: 'center',
-    flex: 1,
-    justifyContent: 'flex-end',
-    paddingBottom: theme.spacing.xl,
+    height: Platform.OS === 'ios' ? 92 : 90,
+    justifyContent: 'center',
     width: '100%',
   },
   title: {
