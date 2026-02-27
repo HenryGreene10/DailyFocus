@@ -18,3 +18,4 @@
 - T16: Home first-launch only + onboarding every session flow (M0) - DONE
 - T17: Restore structural divider lines in onboarding + achievement (M0) - DONE
 - T18: Lock onboarding regions to eliminate residual vertical jump (M0) - DONE
+- T19: Match previous divider style + recenter onboarding/achievement layout (M0) - DONE

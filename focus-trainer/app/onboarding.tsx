@@ -65,7 +65,6 @@ export default function OnboardingScreen() {
           </View>
 
           <View style={styles.instructionRegion}>
-            <View style={styles.divider} />
             <View style={styles.messageFrame}>
               <Animated.Text style={[styles.message, { opacity: stepFade }]}>
                 {steps[stepIndex]}
@@ -97,26 +96,23 @@ const styles = StyleSheet.create({
   },
   titleRegion: {
     alignItems: 'center',
-    height: Platform.OS === 'ios' ? 220 : 204,
+    height: Platform.OS === 'ios' ? 196 : 182,
     justifyContent: 'flex-end',
     width: '100%',
   },
   instructionRegion: {
     alignItems: 'center',
-    height: Platform.OS === 'ios' ? 184 : 168,
+    borderTopColor: '#C4A88266',
+    borderTopWidth: 1,
+    height: Platform.OS === 'ios' ? 170 : 156,
     justifyContent: 'flex-start',
+    marginTop: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
     width: '100%',
-  },
-  divider: {
-    backgroundColor: theme.colors.accent,
-    height: StyleSheet.hairlineWidth,
-    marginBottom: theme.spacing.md,
-    opacity: 0.28,
-    width: '72%',
   },
   messageFrame: {
     alignItems: 'center',
-    height: Platform.OS === 'ios' ? 124 : 112,
+    height: Platform.OS === 'ios' ? 112 : 102,
     justifyContent: 'center',
     width: '100%',
   },

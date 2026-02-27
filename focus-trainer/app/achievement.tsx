@@ -224,20 +224,22 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     alignItems: 'center',
+    alignSelf: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: theme.spacing.xxl,
+    width: '100%',
   },
   statItem: {
     alignItems: 'center',
-    marginHorizontal: theme.spacing.sm,
-    minWidth: 84,
+    width: 96,
   },
   divider: {
     backgroundColor: theme.colors.accent,
-    height: 58,
-    opacity: 0.16,
-    width: StyleSheet.hairlineWidth,
+    height: 70,
+    marginHorizontal: theme.spacing.sm,
+    opacity: 0.12,
+    width: 1,
   },
   statValue: {
     color: theme.colors.textSecondary,
@@ -253,6 +255,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     marginTop: theme.spacing.xs,
     opacity: 0.72,
+    textAlign: 'center',
     textTransform: 'uppercase',
   },
 });
