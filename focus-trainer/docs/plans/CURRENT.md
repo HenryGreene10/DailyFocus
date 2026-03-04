@@ -20,3 +20,5 @@
 - T18: Lock onboarding regions to eliminate residual vertical jump (M0) - DONE
 - T19: Match previous divider style + recenter onboarding/achievement layout (M0) - DONE
 - T20: Final onboarding/story centering and divider balance pass (M0) - DONE
+- T21: App Store iOS identifier/build config pass (M0) - DONE
+- T22: Remove `completeTitle` from story data and use completion note only (M0) - DONE

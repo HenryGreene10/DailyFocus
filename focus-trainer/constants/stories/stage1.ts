@@ -3,7 +3,6 @@ export const stage1Stories = [
     id: 's1-002',
     title: 'Thinking',
     author: 'Walter D Wintle',
-    completeTitle: 'Focus Deepens',
     completeNote:
       "Believe you can focus, and you've already begun. With each repetition, the rest will follow.",
     stage: 1,
