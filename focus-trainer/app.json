@@ -9,6 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.hank107.focustrainer",
+      "buildNumber": "1",
       "supportsTablet": true
     },
     "android": {
@@ -43,6 +45,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "94b9b781-eb08-40a0-8e67-12a890ff7109"
+      }
     }
   }
 }
