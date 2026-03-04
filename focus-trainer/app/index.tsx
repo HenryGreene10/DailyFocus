@@ -1,14 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { theme } from '@/constants/theme';
 
 const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
 const LAST_OUTCOME_TODAY_KEY = 'dailyfocus_last_outcome_today_v1';
 const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
-const HAS_SEEN_HOME_KEY = 'dailyfocus_has_seen_home_v1';
 
 function normalizeStoredDateKey(raw: string): string | null {
   if (!raw) {
@@ -40,7 +39,6 @@ function getTodayDateKey(): string {
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const [showHome, setShowHome] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -62,59 +60,16 @@ export default function WelcomeScreen() {
         return;
       }
 
-      const hasSeenHome = (await AsyncStorage.getItem(HAS_SEEN_HOME_KEY)) === '1';
-      if (hasSeenHome) {
-        router.replace('/onboarding' as never);
-        return;
-      }
-
-      setShowHome(true);
+      router.replace('/onboarding' as never);
     })();
   }, [router]);
 
-  if (!showHome) {
-    return <View style={styles.container} />;
-  }
-
-  return (
-    <Pressable
-      onPress={() => {
-        void (async () => {
-          await AsyncStorage.setItem(HAS_SEEN_HOME_KEY, '1');
-          router.replace('/onboarding' as never);
-        })();
-      }}
-      style={styles.container}>
-      <View style={styles.centerContent}>
-        <Text style={styles.title}>DailyFocus</Text>
-        <Text style={styles.subtitle}>tap to begin your practice</Text>
-      </View>
-    </Pressable>
-  );
+  return <View style={styles.container} />;
 }
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
     backgroundColor: theme.colors.background,
     flex: 1,
-    justifyContent: 'center',
-  },
-  centerContent: {
-    alignItems: 'center',
-  },
-  title: {
-    color: theme.colors.textPrimary,
-    fontFamily: theme.fonts.cormorantLight,
-    fontSize: theme.fontSizes.hero,
-    fontWeight: '300',
-    letterSpacing: 2,
-  },
-  subtitle: {
-    color: theme.colors.textFaint,
-    fontFamily: theme.fonts.loraRegular,
-    fontSize: theme.fontSizes.body,
-    letterSpacing: 3,
-    marginTop: theme.spacing.xs,
   },
 });
