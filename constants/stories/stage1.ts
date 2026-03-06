@@ -14,4 +14,20 @@ export const stage1Stories = [
       'Life\'s battles don\'t always go\nTo the stronger or faster man,\nBut soon or late the man who wins\nIs the man who thinks he can!',
     ],
   },
+  {
+    id: 's1-003',
+    title: 'The Dog and His Reflection',
+    author: 'Aesop',
+    completeNote: 'Greed is sometimes caught by its own bait.',
+    stage: 1,
+    minDisplayMs: 2000,
+    passages: [
+      'A Dog, to whom the butcher had\nthrown a bone, was hurrying\nhome with his prize as fast as\nhe could go.',
+      'As he crossed a narrow\nfootbridge, he happened to look\ndown and saw himself reflected\nin the quiet water as if in a mirror.',
+      'But the greedy Dog thought he\nsaw a real Dog carrying a bone\nmuch bigger than his own.',
+      'If he had stopped to think he\nwould have known better.',
+      'But instead of thinking, he dropped\nhis bone and sprang at the Dog in\nthe river, only to find himself\nswimming for dear life to reach the shore.',
+      'At last he managed to\nscramble out, and as he stood\nsadly thinking about the good bone\nhe had lost, he realized what a\nstupid Dog he had been.',
+    ],
+  },
 ] as const;
