@@ -49,4 +49,22 @@ export const stage1Stories = [
       'The Mullah thought for a few seconds\nand finally revealed his open secret,\n“Donkeys.”',
     ],
   },
+  {
+    id: 's1-005',
+    title: 'Two Monks and a Lady',
+    author: 'Buddhist Monk Story',
+    completeNote: 'The only thing heavier than a burden is choosing to keep carrying it.',
+    stage: 1,
+    minDisplayMs: 2000,
+    passages: [
+      'Two Buddhist Monks were on a journey,\none was a senior monk,\nthe other a junior monk.',
+      'During their journey they approached\na raging river and on the river bank\nstood a young lady.',
+      'She was clearly concerned about how she\nwould get to the other side of the river\nwithout drowning.',
+      'The junior monk walked straight past her\nwithout giving it a thought and he\ncrossed the river.',
+      'The senior monk picked up the woman and\ncarried her across the river.\nHe placed her down, they parted ways\nwith woman and on they went with the journey.',
+      'As the journey went on, the senior monk\ncould see some concern on the junior monk\'s mind,\nhe asked what was wrong.',
+      'The junior monk replied, "how could you\ncarry her like that? You know we can\'t touch women,\nit\'s against our way of life".',
+      'The senior monk answered, "I left the woman\nat the rivers edge a long way back,\nwhy are you still carrying her?"',
+    ],
+  },
 ] as const;
