@@ -30,4 +30,23 @@ export const stage1Stories = [
       'At last he managed to\nscramble out, and as he stood\nsadly thinking about the good bone\nhe had lost, he realized what a\nstupid Dog he had been.',
     ],
   },
+  {
+    id: 's1-004',
+    title: 'The Smuggler',
+    author: 'Sufi Folk Tale',
+    completeNote: 'Attention is shaped by assumptions.',
+    stage: 1,
+    minDisplayMs: 2000,
+    passages: [
+      'Every first of the month the Mullah would\ncross the border with thirty donkeys\nwith two bails of straw on each.',
+      'Each time the custom person would ask\nthe Mullah’s profession and the Mullah\nwould reply, “I am an honest smuggler.”',
+      'So each time The Mullah, his donkeys\nand the bails of straw would be searched\nfrom top to toe.',
+      'Each time the custom folk would\nnot find anything.\nNext week the Mullah would return\nwithout his donkeys or bails of straw.',
+      'Years went by and the Mullah prospered\nin his smuggling profession to the extent\nthat he retired.',
+      'Many years later the custom person too\nhad retired.\nAs it happened one day the two former\nadversaries met in a country far from home.',
+      'The two hugged each other like old buddies\nand started talking.\nAfter a while the custom person asked\nthe question which had been bugging him over the years,',
+      '“Mullah, please let me know what were you\nsmuggling all those years ago?”',
+      'The Mullah thought for a few seconds\nand finally revealed his open secret,\n“Donkeys.”',
+    ],
+  },
 ] as const;
