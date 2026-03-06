@@ -9,6 +9,7 @@ import { theme } from '@/constants/theme';
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
 const LAST_COMPLETED_KEY = 'dailyfocus_last_completion_date_v1';
 const LAST_COMPLETED_STORY_ID_KEY = 'dailyfocus_last_completed_story_id_v1';
+const CURRENT_STORY_INDEX_KEY = 'dailyfocus_current_story_index_v1';
 const LAST_OUTCOME_TODAY_KEY = 'dailyfocus_last_outcome_today_v1';
 const LAST_OUTCOME_DATE_KEY = 'dailyfocus_last_outcome_date_v1';
 
@@ -165,6 +166,19 @@ export default function AchievementScreen() {
                   LAST_OUTCOME_TODAY_KEY,
                   LAST_OUTCOME_DATE_KEY,
                 ]);
+                const rawIndex = await AsyncStorage.getItem(CURRENT_STORY_INDEX_KEY);
+                const parsedIndex = Number(rawIndex);
+                const validIndex =
+                  Number.isFinite(parsedIndex) && parsedIndex >= 0 ? Math.floor(parsedIndex) : 0;
+                const normalizedCurrentIndex =
+                  stage1Stories.length > 0
+                    ? Math.min(validIndex, stage1Stories.length - 1)
+                    : 0;
+                const nextStoryIndex =
+                  stage1Stories.length > 0
+                    ? (normalizedCurrentIndex + 1) % stage1Stories.length
+                    : 0;
+                await AsyncStorage.setItem(CURRENT_STORY_INDEX_KEY, String(nextStoryIndex));
                 router.replace('/' as never);
               })();
             }

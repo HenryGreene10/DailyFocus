@@ -25,3 +25,4 @@
 - T23: Remove first-launch home screen and route index directly to onboarding (M0) - DONE
 - T24: Add stage 1 story `s1-003` (The Dog and His Reflection) with paced passages (M0) - DONE
 - T25: Add stage 1 story `s1-004` (The Smuggler) with paced passages (M0) - DONE
+- T26: DEV-only achievement long-press now advances to next story index for preview flow (M0) - DONE
