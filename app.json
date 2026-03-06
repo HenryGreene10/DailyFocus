@@ -11,7 +11,10 @@
     "ios": {
       "bundleIdentifier": "com.hank107.focustrainer",
       "buildNumber": "1",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
