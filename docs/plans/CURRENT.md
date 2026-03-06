@@ -27,3 +27,4 @@
 - T25: Add stage 1 story `s1-004` (The Smuggler) with paced passages (M0) - DONE
 - T26: DEV-only achievement long-press now advances to next story index for preview flow (M0) - DONE
 - T27: Add stage 1 story `s1-005` (Two Monks and a Lady) with paced passages (M0) - DONE
+- T28: Shorten story tap guard by 500ms and switch title-author separator to dash (M0) - DONE

@@ -28,6 +28,7 @@ const TONIGHT_REMINDER_ID_KEY = 'dailyfocus_tonight_reminder_notification_id_v1'
 const REMINDER_NOTIFICATION_TYPE = 'daily_reminder';
 const TRANSITION_FADE_MS = Platform.OS === 'ios' ? 980 : 820;
 const TRANSITION_FADE_EASING = Easing.inOut(Easing.ease);
+const READING_GUARD_REDUCTION_MS = 500;
 
 type FocusStats = {
   storiesCompleted: number;
@@ -452,7 +453,8 @@ export default function StoryScreen() {
     }
 
     const elapsedSincePassageShownMs = Date.now() - passageStartedAtRef.current;
-    if (elapsedSincePassageShownMs < story.minDisplayMs) {
+    const requiredReadMs = Math.max(0, story.minDisplayMs - READING_GUARD_REDUCTION_MS);
+    if (elapsedSincePassageShownMs < requiredReadMs) {
       showBlockedHint(event);
       return;
     }
@@ -521,7 +523,7 @@ export default function StoryScreen() {
           <View style={styles.metaBlock}>
             <Text style={styles.title}>
               {story.title}
-              {' by '}
+              {' - '}
               {story.author}
             </Text>
           </View>
