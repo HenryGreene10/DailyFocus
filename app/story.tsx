@@ -15,7 +15,12 @@ import {
   View,
 } from 'react-native';
 
-import { stage1Stories } from '@/constants/stories';
+import {
+  fetchAndCacheStories,
+  getBundledStories,
+  loadCachedStories,
+  type StoryEntry,
+} from '@/src/services/storyService';
 import { theme } from '@/constants/theme';
 
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
@@ -47,8 +52,6 @@ const defaultStats: FocusStats = {
   lastCompletedDate: '',
   dayStreak: 0,
 };
-
-type StoryEntry = (typeof stage1Stories)[number];
 
 function sanitizeNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -300,10 +303,11 @@ async function completeStory(elapsedSeconds: number): Promise<FocusStats> {
 
 export default function StoryScreen() {
   const router = useRouter();
+  const [stories, setStories] = useState<StoryEntry[]>(getBundledStories);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const story: StoryEntry | undefined =
-    stage1Stories.length > 0
-      ? stage1Stories[Math.min(currentStoryIndex, stage1Stories.length - 1)]
+    stories.length > 0
+      ? stories[Math.min(currentStoryIndex, stories.length - 1)]
       : undefined;
   const [passageIndex, setPassageIndex] = useState(0);
   const [blockedHint, setBlockedHint] = useState<{ x: number; y: number } | null>(null);
@@ -330,6 +334,15 @@ export default function StoryScreen() {
       if (Number.isFinite(parsed) && parsed >= 0) {
         setCurrentStoryIndex(parsed);
       }
+    })();
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      const cached = await loadCachedStories();
+      if (cached) setStories(cached);
+      const fresh = await fetchAndCacheStories();
+      if (fresh) setStories(fresh);
     })();
   }, []);
 

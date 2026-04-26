@@ -3,7 +3,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { stage1Stories } from '@/constants/stories';
+import { getBundledStories, loadCachedStories } from '@/src/services/storyService';
 import { theme } from '@/constants/theme';
 
 const STORY_STATS_KEY = 'dailyfocus_stats_v1';
@@ -125,7 +125,8 @@ export default function AchievementScreen() {
         return;
       }
 
-      const story = stage1Stories.find((entry) => entry.id === lastCompletedStoryId);
+      const stories = (await loadCachedStories()) ?? getBundledStories();
+      const story = stories.find((entry) => entry.id === lastCompletedStoryId);
       if (!story) {
         return;
       }

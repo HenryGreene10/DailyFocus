@@ -1,0 +1,72 @@
+{
+  "v": 1,
+  "stories": [
+    {
+      "id": "s1-002",
+      "title": "Thinking",
+      "author": "Walter D Wintle",
+      "completeNote": "Believe you can focus, and you've already begun. With each repetition, the rest will follow.",
+      "stage": 1,
+      "minDisplayMs": 2000,
+      "passages": [
+        "If you think you are beaten, you are\nIf you think you dare not, you don't,\nIf you like to win, but you think you can't\nIt is almost certain you won't.",
+        "If you think you'll lose, you're lost\nFor out of the world we find,\nSuccess begins with a fellow's will\nIt's all in the state of mind.",
+        "If you think you are outclassed, you are\nYou've got to think high to rise,\nYou've got to be sure of yourself before\nYou can ever win a prize.",
+        "Life's battles don't always go\nTo the stronger or faster man,\nBut soon or late the man who wins\nIs the man who thinks he can!"
+      ]
+    },
+    {
+      "id": "s1-003",
+      "title": "The Dog and His Reflection",
+      "author": "Aesop",
+      "completeNote": "Greed is sometimes caught by its own bait.",
+      "stage": 1,
+      "minDisplayMs": 2000,
+      "passages": [
+        "A Dog, to whom the butcher had\nthrown a bone, was hurrying\nhome with his prize as fast as\nhe could go.",
+        "As he crossed a narrow\nfootbridge, he happened to look\ndown and saw himself reflected\nin the quiet water as if in a mirror.",
+        "But the greedy Dog thought he\nsaw a real Dog carrying a bone\nmuch bigger than his own.",
+        "If he had stopped to think he\nwould have known better.",
+        "But instead of thinking, he dropped\nhis bone and sprang at the Dog in\nthe river, only to find himself\nswimming for dear life to reach the shore.",
+        "At last he managed to\nscramble out, and as he stood\nsadly thinking about the good bone\nhe had lost, he realized what a\nstupid Dog he had been."
+      ]
+    },
+    {
+      "id": "s1-004",
+      "title": "The Smuggler",
+      "author": "Sufi Folk Tale",
+      "completeNote": "Attention is shaped by assumptions.",
+      "stage": 1,
+      "minDisplayMs": 2000,
+      "passages": [
+        "Every first of the month the Mullah would\ncross the border with thirty donkeys\nwith two bails of straw on each.",
+        "Each time the custom person would ask\nthe Mullah's profession and the Mullah\nwould reply, \"I am an honest smuggler.\"",
+        "So each time The Mullah, his donkeys\nand the bails of straw would be searched\nfrom top to toe.",
+        "Each time the custom folk would\nnot find anything.\nNext week the Mullah would return\nwithout his donkeys or bails of straw.",
+        "Years went by and the Mullah prospered\nin his smuggling profession to the extent\nthat he retired.",
+        "Many years later the custom person too\nhad retired.\nAs it happened one day the two former\nadversaries met in a country far from home.",
+        "The two hugged each other like old buddies\nand started talking.\nAfter a while the custom person asked\nthe question which had been bugging him over the years,",
+        "\"Mullah, please let me know what were you\nsmuggling all those years ago?\"",
+        "The Mullah thought for a few seconds\nand finally revealed his open secret,\n\"Donkeys.\""
+      ]
+    },
+    {
+      "id": "s1-005",
+      "title": "Two Monks and a Lady",
+      "author": "Buddhist Monk Story",
+      "completeNote": "The only thing heavier than a burden is choosing to keep carrying it.",
+      "stage": 1,
+      "minDisplayMs": 2000,
+      "passages": [
+        "Two Buddhist Monks were on a journey,\none was a senior monk,\nthe other a junior monk.",
+        "During their journey they approached\na raging river and on the river bank\nstood a young lady.",
+        "She was clearly concerned about how she\nwould get to the other side of the river\nwithout drowning.",
+        "The junior monk walked straight past her\nwithout giving it a thought and he\ncrossed the river.",
+        "The senior monk picked up the woman and\ncarried her across the river.\nHe placed her down, they parted ways\nwith woman and on they went with the journey.",
+        "As the journey went on, the senior monk\ncould see some concern on the junior monk's mind,\nhe asked what was wrong.",
+        "The junior monk replied, \"how could you\ncarry her like that? You know we can't touch women,\nit's against our way of life\".",
+        "The senior monk answered, \"I left the woman\nat the rivers edge a long way back,\nwhy are you still carrying her?\""
+      ]
+    }
+  ]
+}
