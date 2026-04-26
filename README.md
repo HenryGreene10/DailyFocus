@@ -1,39 +1,42 @@
-# Focus Trainer (Expo)
+# DailyFocus
 
-Minimal iOS-first Focus Story Trainer (M0) built with Expo + expo-router.
+DailyFocus trains attention through short narrative focus exercises. The app presents a story one page at a time — you can only advance after reading for a few seconds, and leaving the app mid-session counts as a failure.
 
-## M0 flow
-- Home -> Session -> Result
-- Win: reach end of story
-- Fail: app backgrounds during active session OR user taps quit
-- No pause, no breaks, no in-session progress bar/stats
+Coming soon to the App Store.
 
-## Run
-```bash
-npm install
-npx expo start
-```
+---
 
-Open in Expo Go on iPhone.
+## How It Works
 
-## Smoke test (M0)
-1. Launch app to Home.
-2. Tap `Start`.
-3. On Session, verify `Next` stays disabled for ~4s on each page.
-4. Reach final page and tap `Finish`.
-5. Verify Result shows `Completed`, then tap `Continue` back to Home.
-6. Start another session.
-7. While on Session, send app to background (home gesture/app switch).
-8. Return to app and verify Result shows `Failed` with reason `backgrounded`.
-9. Start again and tap `Quit Session`; verify Result shows `Failed` with reason `quit`.
+- A session presents a short story across multiple pages
+- Each page enforces a minimum read time before advancing
+- Backgrounding the app or quitting mid-session marks the session as failed
+- Completing the full story marks it as a win
+- No pause, no breaks, no progress stats during the session
+
+---
+
+## Stack
+
+- React Native (Expo)
+- TypeScript
+- expo-router
+- EAS Build for App Store distribution
+
+---
 
 ## Structure
-```text
-src/
-  content/
-  domain/
-  services/
-  state/
-  storage/
-  ui/
+
 ```
+src/
+  content/     # Story content
+  domain/      # Core session logic
+  services/    # Background detection, session tracking
+  state/       # App state management
+  storage/     # Local persistence
+  ui/          # Components and screens
+```
+
+---
+
+Built by [Henry Greene](https://github.com/HenryGreene10)
