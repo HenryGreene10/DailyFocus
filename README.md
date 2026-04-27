@@ -2,7 +2,7 @@
 
 DailyFocus trains attention through short narrative focus exercises. The app presents a story one page at a time — you can only advance after reading for a few seconds, and leaving the app mid-session counts as a failure.
 
-Coming soon to the App Store.
+Available on App Store [here](https://apps.apple.com/us/app/daily-focus-read-train/id6760131735)
 
 ---
 
