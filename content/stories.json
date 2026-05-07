@@ -67,6 +67,22 @@
         "The junior monk replied, \"how could you\ncarry her like that? You know we can't touch women,\nit's against our way of life\".",
         "The senior monk answered, \"I left the woman\nat the rivers edge a long way back,\nwhy are you still carrying her?\""
       ]
+    },
+    {
+      "id": "s1-006",
+      "title": "The Man Who Sought His Axe",
+      "author": "Lie Yukou",
+      "completeNote": "What we suspect, we see everywhere we look.",
+      "stage": 1,
+      "minDisplayMs": 2000,
+      "passages": [
+        "A man lost his axe.\nHe suspected the son of his neighbor.",
+        "He watched the boy's walk —\nit was the walk of an axe thief.\nHe observed the boy's expression —\nit was the expression of an axe thief.",
+        "He listened to the boy speak —\nevery word was the word of an axe thief.\nEvery gesture, every glance, every movement\nconfirmed his suspicion.",
+        "Some days later, the man was digging in the valley.\nThere, beneath the earth, he found his axe.",
+        "The next day he looked again at his neighbor's son.\nThe boy's walk was not the walk of an axe thief.\nHis expression was not the expression of an axe thief.\nHis words were not the words of an axe thief.",
+        "Nothing about him resembled a thief in any way.\nThe axe had not changed the boy.\nIt had only changed the man who was looking."
+      ]
     }
   ]
 }
